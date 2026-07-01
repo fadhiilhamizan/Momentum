@@ -1,0 +1,73 @@
+/* colors.css — Momentum golden-black palette as CSS custom properties.
+   These are the single source of truth for color. Components reference the
+   semantic variables (e.g. --surface-1), never raw hex. */
+
+:root,
+:root[data-theme='dark'] {
+  /* Backgrounds & surfaces */
+  --bg: #0f0e0c;
+  --surface-1: #1a1815;
+  --surface-2: #252220;
+  --surface-3: #2f2b27;
+
+  /* Gold accent */
+  --gold: #d4af37;
+  --gold-light: #e8c547;
+  --gold-dark: #b8941f;
+  --gold-soft: rgba(212, 175, 55, 0.12);
+  --gold-glow: rgba(212, 175, 55, 0.28);
+
+  /* Text */
+  --text-1: #f5f5f0;
+  --text-2: #b8b3a8;
+  --text-3: #8b8680;
+
+  /* Lines */
+  --border: #2a251f;
+  --divider: #3a3430;
+
+  /* Success / completion */
+  --success: #7cb342;
+  --success-light: #9ccc65;
+  --success-glow: rgba(124, 179, 66, 0.2);
+
+  /* Priority + energy accents */
+  --priority-critical: #ef5350;
+  --priority-high: #ff8a65;
+  --priority-medium: #ffb74d;
+  --priority-low: #66bb6a;
+  --priority-someday: #90a4ae;
+  --energy: #64b5f6;
+
+  /* Effects */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.28);
+  --shadow-gold: 0 4px 18px rgba(212, 175, 55, 0.18);
+
+  /* Radii */
+  --radius-card: 8px;
+  --radius-btn: 6px;
+  --radius-input: 4px;
+  --radius-pill: 999px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 150ms;
+  --dur: 220ms;
+  --dur-slow: 300ms;
+}
+
+/* Optional light theme — activated with data-theme="light" on <html>. */
+:root[data-theme='light'] {
+  --bg: #faf8f3;
+  --surface-1: #ffffff;
+  --surface-2: #f2efe8;
+  --surface-3: #e8e3d8;
+  --text-1: #1f1c17;
+  --text-2: #5c574d;
+  --text-3: #8b8680;
+  --border: #e3ddd0;
+  --divider: #d8d1c2;
+  --shadow-sm: 0 2px 8px rgba(60, 50, 20, 0.08);
+  --shadow-md: 0 6px 20px rgba(60, 50, 20, 0.12);
+}

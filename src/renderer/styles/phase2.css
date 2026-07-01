@@ -1,0 +1,451 @@
+/* phase2.css — styling for Projects, task detail, tags, subtasks, focus timer. */
+
+/* ------------------------------------------------------------------ */
+/* Modal                                                              */
+/* ------------------------------------------------------------------ */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 7, 6, 0.62);
+  backdrop-filter: blur(3px);
+  display: grid;
+  place-items: center;
+  z-index: 80;
+  animation: fadeIn var(--dur-fast) var(--ease);
+  padding: var(--sp-6);
+}
+.modal {
+  width: 100%;
+  max-width: 560px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--surface-1);
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-md);
+  animation: fadeIn var(--dur) var(--ease);
+}
+.modal-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--surface-1);
+  z-index: 1;
+}
+.modal-title {
+  font-size: var(--fs-h2);
+  font-weight: 600;
+  flex: 1;
+}
+.modal-body {
+  padding: var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+.modal-footer {
+  display: flex;
+  gap: var(--sp-2);
+  justify-content: space-between;
+  padding: var(--sp-4) var(--sp-5);
+  border-top: 1px solid var(--border);
+  position: sticky;
+  bottom: 0;
+  background: var(--surface-1);
+}
+
+/* ------------------------------------------------------------------ */
+/* Form fields                                                        */
+/* ------------------------------------------------------------------ */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.field-label {
+  font-size: var(--fs-tiny);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+  font-weight: 600;
+}
+.text-input,
+.textarea,
+.select,
+.date-input {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-input);
+  padding: 8px 10px;
+  font-size: var(--fs-body-lg);
+  color: var(--text-1);
+  outline: none;
+  transition: border-color var(--dur-fast) var(--ease);
+  width: 100%;
+}
+.text-input:focus,
+.textarea:focus,
+.select:focus,
+.date-input:focus {
+  border-color: rgba(212, 175, 55, 0.5);
+}
+.textarea {
+  resize: vertical;
+  min-height: 70px;
+  line-height: 1.5;
+  font-family: inherit;
+}
+.select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b8680' stroke-width='2.5'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+}
+.date-input {
+  color-scheme: dark;
+}
+
+/* ------------------------------------------------------------------ */
+/* Tags                                                               */
+/* ------------------------------------------------------------------ */
+
+.tag-editor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  align-items: center;
+}
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 6px 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-small);
+  background: var(--gold-soft);
+  color: var(--gold-light);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
+.tag-chip .remove {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  color: var(--gold-light);
+  opacity: 0.7;
+}
+.tag-chip .remove:hover {
+  opacity: 1;
+  background: rgba(212, 175, 55, 0.2);
+}
+.tag-add {
+  background: var(--surface-2);
+  border: 1px dashed var(--divider);
+  border-radius: var(--radius-pill);
+  padding: 4px 10px;
+  font-size: var(--fs-small);
+  color: var(--text-2);
+  outline: none;
+  min-width: 90px;
+}
+.tag-add:focus {
+  border-color: rgba(212, 175, 55, 0.5);
+  border-style: solid;
+}
+.tag-mini {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--fs-tiny);
+  color: var(--gold);
+}
+
+/* ------------------------------------------------------------------ */
+/* Subtasks                                                           */
+/* ------------------------------------------------------------------ */
+
+.subtask-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.subtask-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 6px 8px;
+  border-radius: var(--radius-input);
+  transition: background var(--dur-fast) var(--ease);
+}
+.subtask-row:hover {
+  background: var(--surface-2);
+}
+.subtask-check {
+  width: 16px;
+  height: 16px;
+  border-radius: 5px;
+  border: 2px solid var(--divider);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: transparent;
+  transition: all var(--dur-fast) var(--ease);
+}
+.subtask-check:hover {
+  border-color: var(--gold);
+}
+.subtask-check.done {
+  background: var(--success);
+  border-color: var(--success);
+  color: #10240a;
+}
+.subtask-text {
+  flex: 1;
+  font-size: var(--fs-body);
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text-1);
+}
+.subtask-row.done .subtask-text {
+  text-decoration: line-through;
+  color: var(--text-3);
+}
+.subtask-remove {
+  opacity: 0;
+  color: var(--text-3);
+}
+.subtask-row:hover .subtask-remove {
+  opacity: 1;
+}
+.subtask-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-tiny);
+  color: var(--text-3);
+}
+
+/* ------------------------------------------------------------------ */
+/* Projects                                                           */
+/* ------------------------------------------------------------------ */
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: var(--sp-4);
+}
+.project-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: var(--sp-4);
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease),
+    box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  min-height: 132px;
+}
+.project-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--divider);
+  box-shadow: var(--shadow-sm);
+}
+.project-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+.project-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+.project-name {
+  font-size: var(--fs-h2);
+  font-weight: 600;
+  flex: 1;
+  line-height: 1.25;
+  word-break: break-word;
+}
+.project-fav {
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+.project-fav.on {
+  color: var(--gold);
+}
+.project-desc {
+  font-size: var(--fs-body);
+  color: var(--text-3);
+  line-height: 1.4;
+}
+.project-foot {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.project-count {
+  font-size: var(--fs-small);
+  color: var(--text-2);
+}
+.project-add-card {
+  border: 1px dashed var(--divider);
+  background: transparent;
+  display: grid;
+  place-items: center;
+  color: var(--text-3);
+  gap: var(--sp-2);
+  min-height: 132px;
+}
+.project-add-card:hover {
+  color: var(--gold);
+  border-color: rgba(212, 175, 55, 0.5);
+  transform: translateY(-2px);
+}
+
+.color-swatches {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+.color-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  border: 2px solid transparent;
+  transition: transform var(--dur-fast) var(--ease);
+}
+.color-swatch:hover {
+  transform: scale(1.1);
+}
+.color-swatch.selected {
+  border-color: var(--text-1);
+}
+
+/* ------------------------------------------------------------------ */
+/* Focus timer overlay                                                */
+/* ------------------------------------------------------------------ */
+
+.focus-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 40%,
+    #17140f 0%,
+    var(--bg) 70%
+  );
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  animation: fadeIn var(--dur) var(--ease);
+}
+.focus-card {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-5);
+  max-width: 420px;
+  padding: var(--sp-6);
+}
+.focus-eyebrow {
+  font-size: var(--fs-tiny);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--gold);
+}
+.focus-task {
+  font-size: var(--fs-h1);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.focus-ring-wrap {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  display: grid;
+  place-items: center;
+}
+.focus-time {
+  position: absolute;
+  font-size: 52px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.focus-phase {
+  position: absolute;
+  bottom: 62px;
+  font-size: var(--fs-small);
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.focus-controls {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: center;
+}
+.focus-btn {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-1);
+  transition: all var(--dur-fast) var(--ease);
+}
+.focus-btn:hover {
+  border-color: var(--divider);
+  transform: translateY(-1px);
+}
+.focus-btn.primary {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
+  color: #1a1510;
+  border: none;
+}
+.focus-btn.primary:hover {
+  box-shadow: var(--shadow-gold);
+}
+.focus-review {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  align-items: center;
+}
+.focus-exit {
+  position: fixed;
+  top: var(--sp-5);
+  right: var(--sp-5);
+  color: var(--text-3);
+}
+.focus-exit:hover {
+  color: var(--text-1);
+}
+
+/* Focus/detail buttons revealed on task hover */
+.task-card:hover .focus-btn-sm {
+  opacity: 1;
+}
+.focus-btn-sm {
+  opacity: 0;
+}
