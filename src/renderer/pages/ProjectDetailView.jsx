@@ -6,6 +6,7 @@ import { useTaskStore } from '../store/taskStore';
 import TaskInput from '../components/TaskInput';
 import TaskCard from '../components/TaskCard';
 import ProjectForm from '../components/ProjectForm';
+import ConfirmDialog from '../components/ConfirmDialog';
 import ProgressRing from '../components/ProgressRing';
 import EmptyState from '../components/EmptyState';
 import { sortTasks } from '../utils/taskHelpers';
@@ -17,6 +18,7 @@ export default function ProjectDetailView() {
   const deleteProject = useProjectStore((s) => s.deleteProject);
   const tasks = useTaskStore((s) => s.tasks);
   const [editing, setEditing] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   const { active, done, pct } = useMemo(() => {
     const mine = tasks.filter((t) => t.projectId === id);
@@ -51,14 +53,7 @@ export default function ProjectDetailView() {
         <button className="icon-btn" onClick={() => setEditing(true)} title="Edit project">
           <Pencil size={16} />
         </button>
-        <button
-          className="icon-btn"
-          onClick={() => {
-            deleteProject(project.id);
-            navigate('/projects');
-          }}
-          title="Delete project"
-        >
+        <button className="icon-btn" onClick={() => setConfirming(true)} title="Delete project">
           <Trash2 size={16} />
         </button>
       </div>
@@ -91,6 +86,19 @@ export default function ProjectDetailView() {
       )}
 
       {editing && <ProjectForm project={project} onClose={() => setEditing(false)} />}
+
+      {confirming && (
+        <ConfirmDialog
+          title="Delete project?"
+          message={`“${project.name}” will be removed. Its tasks will be kept but unassigned from the project.`}
+          confirmLabel="Delete project"
+          onConfirm={() => {
+            deleteProject(project.id);
+            navigate('/projects');
+          }}
+          onClose={() => setConfirming(false)}
+        />
+      )}
     </div>
   );
 }

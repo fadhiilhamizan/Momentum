@@ -73,6 +73,8 @@ export default function App() {
         e.preventDefault();
         navigate('/settings');
       } else if (e.key === ' ' && !typing) {
+        // Don't hijack Space while an overlay (modal / focus) is open.
+        if (document.querySelector('.modal-overlay, .focus-overlay')) return;
         if (focusInput()) e.preventDefault();
       } else if (e.key === 'Escape' && typing) {
         document.activeElement.blur();

@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
 import { X } from 'lucide-react';
+import { lockScroll, unlockScroll } from '../utils/scrollLock';
 
 /** A centered modal with an overlay. Closes on Escape or overlay click. */
 export default function Modal({ title, onClose, children, footer }) {
   useEffect(() => {
+    lockScroll();
     const onKey = (e) => {
       if (e.key === 'Escape') {
         e.stopPropagation();
@@ -11,7 +13,10 @@ export default function Modal({ title, onClose, children, footer }) {
       }
     };
     window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
+    return () => {
+      window.removeEventListener('keydown', onKey, true);
+      unlockScroll();
+    };
   }, [onClose]);
 
   return (

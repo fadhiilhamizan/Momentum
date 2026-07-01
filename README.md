@@ -8,7 +8,7 @@ Electron + React 18 + SQLite (WebAssembly) + Zustand.
 
 ## Status
 
-**Phase 1 (MVP) + Phase 2 (Power Features) — complete and runnable.**
+**Phases 1–3 complete and runnable** — MVP, Power Features, and Intelligence.
 
 | Area | State |
 | --- | --- |
@@ -27,7 +27,11 @@ Electron + React 18 + SQLite (WebAssembly) + Zustand.
 | **Tags & subtasks** (with progress) | ✅ (Phase 2) |
 | **Recurring tasks** (daily/weekly/monthly, auto-spawn next) | ✅ (Phase 2) |
 | **Focus / Pomodoro timer** with post-session review | ✅ (Phase 2) |
-| Analytics charts, Reflection prompts, smart suggestions | 🔜 Phase 3 |
+| **Analytics dashboard** — trend chart, project donut, 13-week heatmap, insights | ✅ (Phase 3) |
+| **Reflection journaling** — daily prompts, mood, history | ✅ (Phase 3) |
+| **Smart suggestions** — energy/time-aware next-task pick | ✅ (Phase 3) |
+| **JSON data export** | ✅ (Phase 3) |
+| Accessibility, scroll-lock, sound, confirm dialogs, autocomplete | ✅ (polish) |
 
 ## Quick start
 

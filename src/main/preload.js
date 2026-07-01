@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld('momentum', {
   },
   reflections: {
     getByDate: (date) => ipcRenderer.invoke('reflections:getByDate', date),
+    list: (limit) => ipcRenderer.invoke('reflections:list', limit),
     upsert: (input) => ipcRenderer.invoke('reflections:upsert', input),
   },
   analytics: {

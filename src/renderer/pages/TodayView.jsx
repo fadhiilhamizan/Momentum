@@ -1,11 +1,13 @@
 import { useMemo, useRef, useState } from 'react';
-import { Sparkles, Zap, Clock, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Zap, Clock, TrendingUp, CheckCircle2, Wand2, Timer } from 'lucide-react';
 import { useTaskStore } from '../store/taskStore';
 import { useUserStore } from '../store/userStore';
+import { useFocusStore } from '../store/focusStore';
+import { useUiStore } from '../store/uiStore';
 import TaskInput from '../components/TaskInput';
 import TaskCard from '../components/TaskCard';
 import EmptyState from '../components/EmptyState';
-import { groupByEnergy } from '../utils/taskHelpers';
+import { groupByEnergy, suggestForBudget, sortTasks } from '../utils/taskHelpers';
 import { isOverdue, isDueToday, greeting, fullDate } from '../utils/dateHelpers';
 
 const TIME_BUDGETS = [
@@ -18,6 +20,7 @@ const ENERGY_FILTERS = ['Low', 'Medium', 'High'];
 
 export default function TodayView() {
   const tasks = useTaskStore((s) => s.tasks);
+  const loading = useTaskStore((s) => s.loading);
   const streak = useUserStore((s) => s.streak);
   const inputRef = useRef(null);
 
@@ -49,6 +52,25 @@ export default function TodayView() {
 
   const groups = useMemo(() => groupByEnergy(filtered), [filtered]);
   const filtering = !!(energyFilter || timeBudget);
+
+  const startFocus = useFocusStore((s) => s.start);
+  const openTask = useUiStore((s) => s.openTask);
+
+  // Smart pick: the best next task given the current energy/time selection.
+  const pick = useMemo(() => {
+    const active = filtered.filter((t) => !t.isCompleted);
+    if (!active.length) return null;
+    const byBudget = suggestForBudget(active, timeBudget || 120);
+    return byBudget[0] || sortTasks(active, 'priority')[0];
+  }, [filtered, timeBudget]);
+
+  const activeCount = filtered.filter((t) => !t.isCompleted).length;
+  const showSuggestion = pick && (filtering || activeCount >= 2);
+  const suggestionLead = timeBudget
+    ? `You have ${timeBudget < 60 ? `${timeBudget} min` : `${timeBudget / 60} hr`} — start with`
+    : energyFilter
+    ? `${energyFilter} energy — start with`
+    : 'Your momentum pick';
   const allDone = todays.length === 0 && overdue.length === 0 && completedToday.length > 0;
 
   return (
@@ -114,6 +136,19 @@ export default function TodayView() {
         ))}
       </div>
 
+      {showSuggestion && (
+        <div className="suggestion">
+          <Wand2 size={20} className="ico" />
+          <div className="body" onClick={() => openTask(pick.id)} style={{ cursor: 'pointer' }}>
+            <div className="lead">{suggestionLead}</div>
+            <div className="pick">{pick.title}</div>
+          </div>
+          <button className="btn btn-primary" onClick={() => startFocus(pick)}>
+            <Timer size={15} /> Focus
+          </button>
+        </div>
+      )}
+
       <TaskInput ref={inputRef} defaults={{ dueDate: null }} />
 
       {/* Overdue */}
@@ -150,7 +185,7 @@ export default function TodayView() {
           Nothing fits that energy/time window right now. Try clearing the
           filters above.
         </EmptyState>
-      ) : overdue.length === 0 && completedToday.length === 0 ? (
+      ) : !loading && overdue.length === 0 && completedToday.length === 0 ? (
         <EmptyState icon={<Sparkles size={26} />} title="A clean slate">
           Add your first task above. Small steps build big momentum.
         </EmptyState>

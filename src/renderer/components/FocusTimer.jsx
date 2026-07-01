@@ -5,6 +5,8 @@ import { useTaskStore } from '../store/taskStore';
 import { useUserStore } from '../store/userStore';
 import { useUiStore } from '../store/uiStore';
 import ProgressRing from './ProgressRing';
+import { playChime } from '../utils/sound';
+import { lockScroll, unlockScroll } from '../utils/scrollLock';
 
 function fmt(sec) {
   const m = Math.floor(sec / 60);
@@ -41,12 +43,30 @@ export default function FocusTimer() {
     if (phase === 'review') setDifficulty(null);
   }, [phase]);
 
+  // Lock background scroll and allow Escape to exit while the overlay is up.
+  useEffect(() => {
+    if (!phase) return undefined;
+    lockScroll();
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        close();
+      }
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => {
+      window.removeEventListener('keydown', onKey, true);
+      unlockScroll();
+    };
+  }, [phase, close]);
+
   if (!phase) return null;
 
   const progress = totalSec > 0 ? (totalSec - remainingSec) / totalSec : 0;
 
   const completeTask = async () => {
     celebrate(window.innerWidth / 2, window.innerHeight / 2);
+    playChime();
     await toggleComplete(taskId, true);
     await refreshStreak();
     showToast('+10 XP · Focus complete', 'sparkles');

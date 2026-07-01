@@ -1,6 +1,9 @@
-import { Moon, Sun, Shield, Database } from 'lucide-react';
+import { Moon, Sun, Shield, Database, Volume2, VolumeX, Download } from 'lucide-react';
 import { useUserStore } from '../store/userStore';
-import { isElectron } from '../utils/api';
+import api, { isElectron } from '../utils/api';
+import { playChime } from '../utils/sound';
+import { todayKey } from '../utils/dateHelpers';
+import { useUiStore } from '../store/uiStore';
 
 function Section({ title, children }) {
   return (
@@ -23,11 +26,48 @@ function Section({ title, children }) {
 
 export default function SettingsView() {
   const theme = useUserStore((s) => s.settings.theme || 'dark');
+  const sound = useUserStore((s) => s.settings.sound !== false);
   const setSetting = useUserStore((s) => s.setSetting);
 
   const setTheme = (value) => {
     setSetting('theme', value);
     document.documentElement.setAttribute('data-theme', value);
+  };
+
+  const setSound = (value) => {
+    setSetting('sound', value);
+    if (value) setTimeout(playChime, 0);
+  };
+
+  const showToast = useUiStore((s) => s.showToast);
+  const exportData = async () => {
+    const [tasks, projects, reflections] = await Promise.all([
+      api.tasks.list(),
+      api.projects.list(),
+      api.reflections.list(9999),
+    ]);
+    const streak = await api.streak.get();
+    const payload = {
+      app: 'Momentum',
+      version: '0.1.0',
+      exportedAt: new Date().toISOString(),
+      tasks,
+      projects,
+      reflections,
+      streak,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `momentum-export-${todayKey()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Data exported', 'sparkles');
   };
 
   return (
@@ -54,6 +94,23 @@ export default function SettingsView() {
         </div>
       </Section>
 
+      <Section title="Sound">
+        <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
+          <button
+            className={`pill${sound ? ' selected' : ''}`}
+            onClick={() => setSound(true)}
+          >
+            <Volume2 size={13} /> On
+          </button>
+          <button
+            className={`pill${!sound ? ' selected' : ''}`}
+            onClick={() => setSound(false)}
+          >
+            <VolumeX size={13} /> Off
+          </button>
+        </div>
+      </Section>
+
       <Section title="Privacy & Data">
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--sp-3)', color: 'var(--text-2)', fontSize: 'var(--fs-body-lg)', lineHeight: 1.5 }}>
           <Shield size={18} color="var(--success)" style={{ flexShrink: 0, marginTop: 2 }} />
@@ -62,6 +119,17 @@ export default function SettingsView() {
             {isElectron ? ' in a private SQLite database.' : ' in your browser.'}
             {' '}No accounts, no cloud, no tracking.
           </div>
+        </div>
+      </Section>
+
+      <Section title="Data">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-3)' }}>
+          <div style={{ color: 'var(--text-2)', fontSize: 'var(--fs-body-lg)', lineHeight: 1.5 }}>
+            Export all your tasks, projects and reflections as a JSON backup.
+          </div>
+          <button className="btn btn-ghost" onClick={exportData} style={{ flexShrink: 0 }}>
+            <Download size={15} /> Export JSON
+          </button>
         </div>
       </Section>
 

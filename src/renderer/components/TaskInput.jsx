@@ -1,4 +1,4 @@
-import { useState, useRef, forwardRef, useImperativeHandle } from 'react';
+import { useState, useRef, useId, forwardRef, useImperativeHandle } from 'react';
 import cn from 'classnames';
 import { Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTaskStore } from '../store/taskStore';
@@ -15,6 +15,9 @@ import ProjectSelect from './ProjectSelect';
  */
 const TaskInput = forwardRef(function TaskInput({ defaults = {} }, ref) {
   const addTask = useTaskStore((s) => s.addTask);
+  const allTasks = useTaskStore((s) => s.tasks);
+  const listId = useId();
+  const suggestions = [...new Set(allTasks.map((t) => t.title))].slice(0, 60);
   const [title, setTitle] = useState('');
   const [focused, setFocused] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -64,11 +67,18 @@ const TaskInput = forwardRef(function TaskInput({ defaults = {} }, ref) {
           className="title"
           placeholder="Add a task and press Enter…"
           value={title}
+          list={listId}
+          autoComplete="off"
           onChange={(e) => setTitle(e.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           onKeyDown={onKeyDown}
         />
+        <datalist id={listId}>
+          {suggestions.map((s) => (
+            <option key={s} value={s} />
+          ))}
+        </datalist>
         <button
           type="button"
           className="icon-btn"

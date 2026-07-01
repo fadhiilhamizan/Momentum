@@ -449,3 +449,261 @@
 .focus-btn-sm {
   opacity: 0;
 }
+
+/* ------------------------------------------------------------------ */
+/* Polish: accessibility, scroll lock, responsive                     */
+/* ------------------------------------------------------------------ */
+
+/* Keyboard focus rings — only for keyboard users, not mouse clicks. */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
+  outline: none;
+}
+/* Text controls signal focus with their own border, so drop the ring. */
+.text-input:focus-visible,
+.textarea:focus-visible,
+.select:focus-visible,
+.date-input:focus-visible,
+.task-input input.title:focus-visible,
+.tag-add:focus-visible,
+.subtask-text:focus-visible {
+  outline: none;
+}
+
+button:active {
+  transform: translateY(0.5px);
+}
+
+/* Lock the main pane while an overlay is open. */
+body.overlay-open .main-pane {
+  overflow: hidden;
+}
+
+/* Momentum banner: wrap gracefully instead of overlapping on narrow widths. */
+.momentum-banner {
+  flex-wrap: wrap;
+}
+.momentum-banner > div:not(.banner-icon):not(.banner-stat) {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+.banner-stat {
+  flex-shrink: 0;
+}
+
+/* Stat grids adapt to width. */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--sp-4);
+}
+
+/* ------------------------------------------------------------------ */
+/* Panels, analytics, heatmap, reflection                             */
+/* ------------------------------------------------------------------ */
+
+.panel {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: var(--sp-5);
+}
+.panel-title {
+  font-size: var(--fs-h3);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-2);
+  margin-bottom: var(--sp-4);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.panel-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+}
+@media (max-width: 720px) {
+  .panel-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.segmented {
+  display: inline-flex;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  padding: 2px;
+  gap: 2px;
+}
+.segmented button {
+  padding: 5px 14px;
+  border-radius: 4px;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--text-3);
+  transition: all var(--dur-fast) var(--ease);
+}
+.segmented button.active {
+  background: var(--gold-soft);
+  color: var(--gold-light);
+}
+
+/* Heatmap */
+.heatmap-wrap {
+  display: flex;
+  gap: var(--sp-2);
+  overflow-x: auto;
+  padding-bottom: var(--sp-2);
+}
+.heatmap-weekdays {
+  display: grid;
+  grid-template-rows: repeat(7, 13px);
+  gap: 3px;
+  margin-top: 2px;
+}
+.heatmap-weekdays span {
+  font-size: 9px;
+  color: var(--text-3);
+  line-height: 13px;
+  height: 13px;
+}
+.heatmap {
+  display: flex;
+  gap: 3px;
+}
+.heatmap-col {
+  display: grid;
+  grid-template-rows: repeat(7, 13px);
+  gap: 3px;
+}
+.heatmap-cell {
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  transition: transform var(--dur-fast) var(--ease);
+}
+.heatmap-cell:hover {
+  transform: scale(1.25);
+  outline: 1px solid var(--gold);
+}
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: flex-end;
+  font-size: var(--fs-tiny);
+  color: var(--text-3);
+  margin-top: var(--sp-3);
+}
+
+/* Insights */
+.insight-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-body-lg);
+  color: var(--text-1);
+}
+.insight-row:last-child {
+  border-bottom: none;
+}
+.insight-row .ico {
+  color: var(--gold);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Reflection */
+.reflect-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+}
+.reflect-prompt .q {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-body-lg);
+  font-weight: 600;
+  color: var(--text-1);
+}
+.reflect-prompt .q .emoji {
+  font-size: 16px;
+}
+.mood-row {
+  display: flex;
+  gap: var(--sp-2);
+}
+.mood-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-btn);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 20px;
+  display: grid;
+  place-items: center;
+  transition: all var(--dur-fast) var(--ease);
+}
+.mood-btn:hover {
+  transform: translateY(-2px);
+}
+.mood-btn.selected {
+  border-color: var(--gold);
+  background: var(--gold-soft);
+}
+.reflect-history-item {
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--border);
+}
+.reflect-history-item:last-child {
+  border-bottom: none;
+}
+.reflect-date {
+  font-size: var(--fs-small);
+  color: var(--gold);
+  font-weight: 600;
+  margin-bottom: var(--sp-1);
+}
+
+/* Smart suggestion callout */
+.suggestion {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  background: linear-gradient(120deg, rgba(212, 175, 55, 0.1), transparent 70%);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: var(--radius-card);
+  padding: var(--sp-3) var(--sp-4);
+  margin-bottom: var(--sp-4);
+  animation: fadeIn var(--dur) var(--ease);
+}
+.suggestion .ico {
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.suggestion .body {
+  flex: 1;
+  min-width: 0;
+}
+.suggestion .lead {
+  font-size: var(--fs-body);
+  color: var(--text-2);
+}
+.suggestion .pick {
+  font-size: var(--fs-body-lg);
+  font-weight: 600;
+  color: var(--text-1);
+}

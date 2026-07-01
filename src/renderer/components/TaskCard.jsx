@@ -11,6 +11,7 @@ import { useFocusStore } from '../store/focusStore';
 import { priorityColor, timeLabel } from '../utils/taskHelpers';
 import { dueLabel, dueUrgency, isOverdue } from '../utils/dateHelpers';
 import { isStreakMilestone } from '../utils/gamification';
+import { playChime, playFanfare } from '../utils/sound';
 
 export default function TaskCard({ task }) {
   const { toggleComplete, updateTask, deleteTask } = useTaskStore();
@@ -34,6 +35,7 @@ export default function TaskCard({ task }) {
     if (next) {
       const rect = checkRef.current && checkRef.current.getBoundingClientRect();
       if (rect) celebrate(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      playChime();
       setCompleting(true);
       setTimeout(async () => {
         await toggleComplete(task.id, true);
@@ -41,6 +43,7 @@ export default function TaskCard({ task }) {
         showToast('+10 XP · Nice work', 'sparkles');
         if (streak && isStreakMilestone(streak.currentStreak)) {
           showToast(`🔥 ${streak.currentStreak}-day streak!`, 'flame');
+          playFanfare();
         }
         setCompleting(false);
       }, 260);

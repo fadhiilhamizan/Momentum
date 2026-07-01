@@ -37,6 +37,7 @@ function defaults() {
     startDate: null,
   };
   dbData.settings = dbData.settings || {};
+  dbData.reflections = dbData.reflections || [];
   return dbData;
 }
 function uid() {
@@ -206,6 +207,40 @@ const mock = {
     },
     async all() {
       return defaults().settings;
+    },
+  },
+  reflections: {
+    async getByDate(date) {
+      return defaults().reflections.find((r) => r.date === date) || null;
+    },
+    async list(limit = 30) {
+      return [...defaults().reflections]
+        .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+        .slice(0, limit);
+    },
+    async upsert(input) {
+      const d = defaults();
+      const date = input.date || dayKey(new Date().toISOString());
+      const existing = d.reflections.find((r) => r.date === date);
+      if (existing) {
+        Object.assign(existing, {
+          wins: input.wins || null,
+          learnings: input.learnings || null,
+          tomorrow: input.tomorrow || null,
+          mood: input.mood || null,
+        });
+      } else {
+        d.reflections.push({
+          id: uid(),
+          date,
+          wins: input.wins || null,
+          learnings: input.learnings || null,
+          tomorrow: input.tomorrow || null,
+          mood: input.mood || null,
+        });
+      }
+      saveDb(d);
+      return d.reflections.find((r) => r.date === date);
     },
   },
 };

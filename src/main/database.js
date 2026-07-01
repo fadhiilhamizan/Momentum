@@ -499,6 +499,11 @@ const reflections = {
   getByDate(date) {
     return get('SELECT * FROM reflections WHERE date = $d', { $d: date });
   },
+  list(limit = 30) {
+    return all('SELECT * FROM reflections ORDER BY date DESC LIMIT $lim', {
+      $lim: limit,
+    });
+  },
   upsert(input = {}) {
     const date = input.date || dayKey(new Date().toISOString());
     const existing = this.getByDate(date);

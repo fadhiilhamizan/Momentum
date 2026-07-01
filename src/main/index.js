@@ -83,6 +83,7 @@ function registerIpc() {
 
   // Reflections
   handle('reflections:getByDate', (date) => db.reflections.getByDate(date));
+  handle('reflections:list', (limit) => db.reflections.list(limit));
   handle('reflections:upsert', (input) => db.reflections.upsert(input));
 
   // Analytics
