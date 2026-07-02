@@ -16,7 +16,7 @@ import { playChime, playFanfare } from '../utils/sound';
 export default function TaskCard({ task }) {
   const { toggleComplete, updateTask, deleteTask } = useTaskStore();
   const refreshStreak = useUserStore((s) => s.refreshStreak);
-  const { celebrate, showToast, openTask } = useUiStore();
+  const { celebrate, showToast, openTask, burstConfetti } = useUiStore();
   const projects = useProjectStore((s) => s.projects);
   const startFocus = useFocusStore((s) => s.start);
 
@@ -44,6 +44,7 @@ export default function TaskCard({ task }) {
         if (streak && isStreakMilestone(streak.currentStreak)) {
           showToast(`🔥 ${streak.currentStreak}-day streak!`, 'flame');
           playFanfare();
+          burstConfetti();
         }
         setCompleting(false);
       }, 260);

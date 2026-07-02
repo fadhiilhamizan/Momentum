@@ -4,7 +4,8 @@ import api from '../utils/api';
 export const useUserStore = create((set, get) => ({
   streak: { currentStreak: 0, longestStreak: 0, lastCompletedDate: null },
   streakBump: 0, // increment to trigger the +1 animation
-  settings: { theme: 'dark', sound: true },
+  settings: { theme: 'dark', sound: true, notifications: false },
+  settingsLoaded: false,
 
   loadStreak: async () => {
     try {
@@ -30,9 +31,12 @@ export const useUserStore = create((set, get) => ({
   loadSettings: async () => {
     try {
       const all = await api.settings.all();
-      set({ settings: { theme: 'dark', sound: true, ...(all || {}) } });
+      set({
+        settings: { theme: 'dark', sound: true, notifications: false, ...(all || {}) },
+        settingsLoaded: true,
+      });
     } catch (_) {
-      /* keep defaults */
+      set({ settingsLoaded: true });
     }
   },
 

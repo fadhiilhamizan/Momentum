@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import CelebrationLayer from './components/CelebrationLayer';
@@ -13,9 +13,15 @@ import SettingsView from './pages/SettingsView';
 import AboutView from './pages/AboutView';
 import TaskDetail from './components/TaskDetail';
 import FocusTimer from './components/FocusTimer';
+import Welcome from './components/Welcome';
+import HelpModal from './components/HelpModal';
 import { useTaskStore } from './store/taskStore';
 import { useProjectStore } from './store/projectStore';
 import { useUserStore } from './store/userStore';
+import { useUiStore } from './store/uiStore';
+import { maybeDailyBriefing } from './utils/notifications';
+import { levelFromXp, xpFromCompletions } from './utils/gamification';
+import { playFanfare } from './utils/sound';
 
 function isTypingTarget(el) {
   if (!el) return false;
@@ -28,16 +34,49 @@ export default function App() {
   const loadProjects = useProjectStore((s) => s.load);
   const loadStreak = useUserStore((s) => s.loadStreak);
   const loadSettings = useUserStore((s) => s.loadSettings);
+  const settingsLoaded = useUserStore((s) => s.settingsLoaded);
+  const onboarded = useUserStore((s) => s.settings.onboarded);
+  const setSetting = useUserStore((s) => s.setSetting);
+  const helpOpen = useUiStore((s) => s.helpOpen);
+  const closeHelp = useUiStore((s) => s.closeHelp);
+  const tasks = useTaskStore((s) => s.tasks);
   const navigate = useNavigate();
+
+  // Detect level-ups and celebrate. Armed only after the first load so we
+  // don't fire on existing progress at startup.
+  const prevLevel = useRef(null);
+  const armed = useRef(false);
+  useEffect(() => {
+    const completed = tasks.filter((t) => t.isCompleted).length;
+    const info = levelFromXp(xpFromCompletions(completed));
+    if (!armed.current) {
+      if (!useTaskStore.getState().loading) {
+        prevLevel.current = info.level;
+        armed.current = true;
+      }
+      return;
+    }
+    if (info.level > prevLevel.current) {
+      useUiStore.getState().burstConfetti();
+      useUiStore
+        .getState()
+        .showToast(`Level up! You're now Level ${info.level} — ${info.title}`, 'trophy', 'levelup');
+      playFanfare();
+    }
+    prevLevel.current = info.level;
+  }, [tasks]);
 
   // Initial data load + theme application.
   useEffect(() => {
-    loadTasks();
     loadProjects();
     loadStreak();
+    // Load settings first so the briefing check sees the notification prefs.
     loadSettings().then(() => {
       const theme = useUserStore.getState().settings.theme || 'dark';
       document.documentElement.setAttribute('data-theme', theme);
+      loadTasks().then(() => {
+        maybeDailyBriefing(useTaskStore.getState().tasks);
+      });
     });
   }, [loadTasks, loadProjects, loadStreak, loadSettings]);
 
@@ -72,6 +111,9 @@ export default function App() {
       } else if (mod && e.key === ',') {
         e.preventDefault();
         navigate('/settings');
+      } else if (e.key === '?' && !typing) {
+        e.preventDefault();
+        useUiStore.getState().openHelp();
       } else if (e.key === ' ' && !typing) {
         // Don't hijack Space while an overlay (modal / focus) is open.
         if (document.querySelector('.modal-overlay, .focus-overlay')) return;
@@ -87,6 +129,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      <div className="app-bg" />
       <Sidebar />
       <main className="main-pane">
         <Routes>
@@ -106,6 +149,10 @@ export default function App() {
       <TaskDetail />
       <FocusTimer />
       <CelebrationLayer />
+      {helpOpen && <HelpModal onClose={closeHelp} />}
+      {settingsLoaded && !onboarded && (
+        <Welcome onFinish={() => setSetting('onboarded', true)} />
+      )}
     </div>
   );
 }

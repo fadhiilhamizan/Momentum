@@ -314,6 +314,19 @@ const tasks = {
     return { id };
   },
 
+  /** Persist an explicit manual order by writing sortOrder = position. */
+  reorder(orderedIds = []) {
+    const now = new Date().toISOString();
+    orderedIds.forEach((id, i) => {
+      run('UPDATE tasks SET sortOrder = $o, updatedAt = $u WHERE id = $id', {
+        $id: id,
+        $o: i,
+        $u: now,
+      });
+    });
+    return this.list();
+  },
+
   /** Toggle completion, record history, and update the streak. */
   setCompleted(id, isCompleted) {
     const task = this.get(id);

@@ -37,6 +37,17 @@ export const useTaskStore = create((set, get) => ({
     return saved;
   },
 
+  reorderTasks: async (orderedIds) => {
+    // Optimistically stamp each task's sortOrder to its new position.
+    const orderMap = Object.fromEntries(orderedIds.map((id, i) => [id, i]));
+    set((state) => ({
+      tasks: state.tasks.map((t) =>
+        t.id in orderMap ? { ...t, sortOrder: orderMap[t.id] } : t
+      ),
+    }));
+    await api.tasks.reorder(orderedIds);
+  },
+
   deleteTask: async (id) => {
     const prev = get().tasks;
     set({ tasks: prev.filter((t) => t.id !== id) });

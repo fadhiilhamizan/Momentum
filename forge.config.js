@@ -9,6 +9,7 @@ module.exports = {
     name: 'Momentum',
     executableName: 'momentum',
     asar: true,
+    icon: './assets/icon',
     // sql.js ships a .wasm binary that must remain readable on disk at runtime.
     extraResource: ['./node_modules/sql.js/dist/sql-wasm.wasm'],
   },
@@ -16,7 +17,10 @@ module.exports = {
   makers: [
     {
       name: '@electron-forge/maker-squirrel',
-      config: { name: 'momentum' },
+      config: {
+        name: 'momentum',
+        setupIcon: './assets/icon.ico',
+      },
     },
     {
       name: '@electron-forge/maker-zip',

@@ -8,7 +8,7 @@ Electron + React 18 + SQLite (WebAssembly) + Zustand.
 
 ## Status
 
-**Phases 1–3 complete and runnable** — MVP, Power Features, and Intelligence.
+**Phases 1–4 complete** — MVP, Power Features, Intelligence, and a packaged installer.
 
 | Area | State |
 | --- | --- |
@@ -32,14 +32,41 @@ Electron + React 18 + SQLite (WebAssembly) + Zustand.
 | **Smart suggestions** — energy/time-aware next-task pick | ✅ (Phase 3) |
 | **JSON data export** | ✅ (Phase 3) |
 | Accessibility, scroll-lock, sound, confirm dialogs, autocomplete | ✅ (polish) |
+| **Drag-to-reorder** tasks (All Tasks · Manual, and Projects) | ✅ (Phase 4) |
+| **Desktop notifications** — permission + once-a-day briefing | ✅ (Phase 4) |
+| **Onboarding welcome** + **Help & shortcuts** (`?`) | ✅ (Phase 4) |
+| **Animated background, confetti, level-up, count-ups, button shine** | ✅ (Phase 4) |
+| **Windows installer** (`npm run make`) + app icon + auto-update packaging | ✅ (Phase 4) |
 
 ## Quick start
 
 ```bash
 npm install      # already done
 npm start        # launch the Electron app (Forge dev, HMR)
-npm run make     # build distributables (.exe / .dmg / .AppImage)
+npm run make     # build the installer (see Distribution below)
 ```
+
+## Distribution
+
+`npm run make` produces a Windows installer under `out/make/`:
+
+- `squirrel.windows/x64/Momentum-<version> Setup.exe` — the installer
+- `momentum-<version>-full.nupkg` + `RELEASES` — the Squirrel feed for **auto-updates**
+
+The app icon is generated from `assets/logo.svg` by a pure-JS script (no native
+image tooling required):
+
+```bash
+node scripts/make-icon.js   # regenerates assets/icon.png + assets/icon.ico
+```
+
+**Auto-update:** Squirrel packaging is already in place (`electron-squirrel-startup`
+handles install/update shortcuts, and the `.nupkg`/`RELEASES` feed is produced). To
+enable live updates, host `RELEASES` + the `.nupkg` files (e.g. GitHub Releases) and
+point `autoUpdater.setFeedURL(...)` (or add `update-electron-app`) at that feed.
+
+macOS/Linux targets (`maker-zip`, `maker-deb`, `maker-rpm`) are configured and build
+when `make` runs on those platforms.
 
 ## Architecture
 

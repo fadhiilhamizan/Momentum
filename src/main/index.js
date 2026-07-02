@@ -68,6 +68,7 @@ function registerIpc() {
   handle('tasks:create', (input) => db.tasks.create(input));
   handle('tasks:update', (id, updates) => db.tasks.update(id, updates));
   handle('tasks:remove', (id) => db.tasks.remove(id));
+  handle('tasks:reorder', (ids) => db.tasks.reorder(ids));
   handle('tasks:setCompleted', (id, isCompleted) =>
     db.tasks.setCompleted(id, isCompleted)
   );

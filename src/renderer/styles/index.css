@@ -72,6 +72,45 @@ textarea {
   grid-template-columns: var(--sidebar-w) 1fr;
   height: 100vh;
   background: var(--bg);
+  position: relative;
+}
+
+/* Subtle animated golden aurora drifting behind the content. */
+.app-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.app-bg::before,
+.app-bg::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+}
+.app-bg::before {
+  width: 540px;
+  height: 540px;
+  top: -170px;
+  right: -60px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.16), transparent 70%);
+  animation: bgDrift 18s var(--ease) infinite;
+}
+.app-bg::after {
+  width: 440px;
+  height: 440px;
+  bottom: -150px;
+  left: 200px;
+  background: radial-gradient(circle, rgba(124, 179, 66, 0.08), transparent 70%);
+  animation: bgDrift 24s var(--ease) infinite reverse;
+}
+
+.sidebar,
+.main-pane {
+  position: relative;
+  z-index: 1;
 }
 
 .main-pane {
@@ -427,10 +466,27 @@ button.pill:hover {
 .btn-primary {
   background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
   color: #1a1510;
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -60%;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: skewX(-20deg);
+  opacity: 0;
 }
 .btn-primary:hover {
   filter: brightness(1.06);
   box-shadow: var(--shadow-gold);
+}
+.btn-primary:hover::after {
+  opacity: 1;
+  animation: shine 0.8s var(--ease);
 }
 .btn-primary:disabled {
   opacity: 0.5;

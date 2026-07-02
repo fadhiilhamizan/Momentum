@@ -9,6 +9,7 @@ import { useTaskStore } from '../store/taskStore';
 import { useProjectStore } from '../store/projectStore';
 import { useUserStore } from '../store/userStore';
 import Heatmap from '../components/Heatmap';
+import CountUp from '../components/CountUp';
 import {
   PERIODS, periodDays, completionsByDay, projectBreakdown, heatmap, insights,
 } from '../utils/analyticsHelpers';
@@ -89,7 +90,7 @@ export default function AnalyticsView() {
             >
               <Icon size={18} color={c.color} />
               <div style={{ fontSize: 'var(--fs-display)', fontWeight: 700, marginTop: 'var(--sp-2)' }}>
-                {c.value}
+                <CountUp value={c.value} />
               </div>
               <div style={{ fontSize: 'var(--fs-tiny)', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 {c.label}

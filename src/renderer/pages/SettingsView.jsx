@@ -1,9 +1,10 @@
-import { Moon, Sun, Shield, Database, Volume2, VolumeX, Download } from 'lucide-react';
+import { Moon, Sun, Shield, Database, Volume2, VolumeX, Download, Bell, BellOff } from 'lucide-react';
 import { useUserStore } from '../store/userStore';
 import api, { isElectron } from '../utils/api';
 import { playChime } from '../utils/sound';
 import { todayKey } from '../utils/dateHelpers';
 import { useUiStore } from '../store/uiStore';
+import { requestPermission, permission, testNotification, supported } from '../utils/notifications';
 
 function Section({ title, children }) {
   return (
@@ -27,6 +28,7 @@ function Section({ title, children }) {
 export default function SettingsView() {
   const theme = useUserStore((s) => s.settings.theme || 'dark');
   const sound = useUserStore((s) => s.settings.sound !== false);
+  const notifications = useUserStore((s) => s.settings.notifications === true);
   const setSetting = useUserStore((s) => s.setSetting);
 
   const setTheme = (value) => {
@@ -40,6 +42,22 @@ export default function SettingsView() {
   };
 
   const showToast = useUiStore((s) => s.showToast);
+
+  const setNotifications = async (value) => {
+    if (value) {
+      const result = await requestPermission();
+      if (result !== 'granted') {
+        showToast('Notifications were blocked by your system', 'sparkles');
+        setSetting('notifications', false);
+        return;
+      }
+      setSetting('notifications', true);
+      setTimeout(testNotification, 200);
+    } else {
+      setSetting('notifications', false);
+    }
+  };
+
   const exportData = async () => {
     const [tasks, projects, reflections] = await Promise.all([
       api.tasks.list(),
@@ -108,6 +126,35 @@ export default function SettingsView() {
           >
             <VolumeX size={13} /> Off
           </button>
+        </div>
+      </Section>
+
+      <Section title="Notifications">
+        <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            className={`pill${notifications ? ' selected' : ''}`}
+            onClick={() => setNotifications(true)}
+          >
+            <Bell size={13} /> On
+          </button>
+          <button
+            className={`pill${!notifications ? ' selected' : ''}`}
+            onClick={() => setNotifications(false)}
+          >
+            <BellOff size={13} /> Off
+          </button>
+          {notifications && (
+            <button className="btn btn-ghost" onClick={testNotification} style={{ marginLeft: 'var(--sp-2)' }}>
+              Send test
+            </button>
+          )}
+        </div>
+        <div style={{ color: 'var(--text-3)', fontSize: 'var(--fs-small)', marginTop: 'var(--sp-2)' }}>
+          {!supported()
+            ? 'Notifications are not supported here.'
+            : permission() === 'denied'
+            ? 'Blocked by your system — enable Momentum in OS notification settings.'
+            : 'A once-a-day briefing of your most important tasks.'}
         </div>
       </Section>
 

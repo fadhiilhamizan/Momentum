@@ -65,6 +65,12 @@ export function suggestForBudget(tasks, minutes) {
 export function sortTasks(tasks, by = 'priority') {
   const copy = [...tasks];
   switch (by) {
+    case 'manual':
+      return copy.sort(
+        (a, b) =>
+          (a.sortOrder || 0) - (b.sortOrder || 0) ||
+          (b.createdAt || '').localeCompare(a.createdAt || '')
+      );
     case 'priority':
       return copy.sort(
         (a, b) => priorityRank(a.priority) - priorityRank(b.priority)

@@ -7,6 +7,7 @@ import { useUiStore } from '../store/uiStore';
 import TaskInput from '../components/TaskInput';
 import TaskCard from '../components/TaskCard';
 import EmptyState from '../components/EmptyState';
+import CountUp from '../components/CountUp';
 import { groupByEnergy, suggestForBudget, sortTasks } from '../utils/taskHelpers';
 import { isOverdue, isDueToday, greeting, fullDate } from '../utils/dateHelpers';
 
@@ -102,7 +103,7 @@ export default function TodayView() {
           </div>
         </div>
         <div className="banner-stat">
-          <div className="big">{streak.currentStreak}</div>
+          <div className="big"><CountUp value={streak.currentStreak} /></div>
           <div className="label">day streak</div>
         </div>
       </div>

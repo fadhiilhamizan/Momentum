@@ -678,6 +678,237 @@ body.overlay-open .main-pane {
   margin-bottom: var(--sp-1);
 }
 
+/* ------------------------------------------------------------------ */
+/* Welcome / onboarding + Help                                        */
+/* ------------------------------------------------------------------ */
+
+.welcome-card {
+  width: 100%;
+  max-width: 560px;
+  background: var(--surface-1);
+  border: 1px solid var(--divider);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+  padding: var(--sp-8) var(--sp-8) var(--sp-6);
+  text-align: center;
+  animation: fadeIn var(--dur-slow) var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+.welcome-card::before {
+  content: '';
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 380px;
+  height: 240px;
+  background: radial-gradient(circle, var(--gold-glow), transparent 70%);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.welcome-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  position: relative;
+}
+.welcome-hero .brand-mark {
+  animation: goldPulse 2.4s var(--ease) infinite;
+}
+.welcome-title {
+  font-size: var(--fs-display);
+  font-weight: 700;
+}
+.welcome-sub {
+  color: var(--text-2);
+  font-size: var(--fs-body-lg);
+  max-width: 380px;
+  line-height: 1.5;
+}
+.welcome-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+  margin: var(--sp-6) 0;
+  text-align: left;
+}
+.welcome-feature {
+  display: flex;
+  gap: var(--sp-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: var(--sp-3);
+}
+.wf-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--gold-soft);
+  color: var(--gold);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.wf-title {
+  font-weight: 600;
+  font-size: var(--fs-body-lg);
+}
+.wf-desc {
+  color: var(--text-3);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+.welcome-cta {
+  width: 100%;
+  justify-content: center;
+  padding: 11px;
+  font-size: var(--fs-body-lg);
+}
+.welcome-tip {
+  margin-top: var(--sp-4);
+  color: var(--text-3);
+  font-size: var(--fs-small);
+}
+.welcome-tip kbd,
+.shortcut-keys {
+  background: var(--surface-3);
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: inherit;
+  font-size: var(--fs-tiny);
+  color: var(--text-2);
+}
+
+@media (max-width: 560px) {
+  .welcome-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+.shortcut-row:last-child {
+  border-bottom: none;
+}
+.shortcut-desc {
+  color: var(--text-2);
+  font-size: var(--fs-body-lg);
+}
+
+/* Sidebar help button */
+.help-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  justify-content: center;
+  padding: var(--sp-2);
+  margin-top: var(--sp-3);
+  border-radius: var(--radius-btn);
+  color: var(--text-3);
+  font-size: var(--fs-small);
+  border: 1px solid var(--border);
+  transition: all var(--dur-fast) var(--ease);
+}
+.help-btn:hover {
+  color: var(--gold);
+  border-color: rgba(212, 175, 55, 0.4);
+}
+
+/* ------------------------------------------------------------------ */
+/* Drag-to-reorder                                                    */
+/* ------------------------------------------------------------------ */
+
+.sortable-row {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  position: relative;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+.sortable-row.dragging {
+  opacity: 0.4;
+}
+.drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  flex-shrink: 0;
+  color: var(--text-3);
+  cursor: grab;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.drag-handle:active {
+  cursor: grabbing;
+}
+.sortable-row:hover .drag-handle {
+  opacity: 0.55;
+}
+.drag-handle:hover {
+  opacity: 1;
+  color: var(--gold);
+}
+.sortable-content {
+  flex: 1;
+  min-width: 0;
+}
+.sortable-row.drop-above::before,
+.sortable-row.drop-below::after {
+  content: '';
+  position: absolute;
+  left: 22px;
+  right: 0;
+  height: 2px;
+  background: var(--gold);
+  border-radius: 2px;
+  box-shadow: 0 0 8px var(--gold-glow);
+  z-index: 3;
+}
+.sortable-row.drop-above::before {
+  top: -4px;
+}
+.sortable-row.drop-below::after {
+  bottom: -4px;
+}
+
+/* Confetti burst (level-ups, milestones) */
+.confetti-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 70;
+  overflow: hidden;
+}
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  width: 9px;
+  height: 14px;
+  border-radius: 2px;
+  animation: confettiFall 1.9s var(--ease) forwards;
+}
+
+/* Level-up toast variant */
+.toast.levelup {
+  border-color: rgba(212, 175, 55, 0.6);
+  background: linear-gradient(120deg, var(--surface-2), rgba(212, 175, 55, 0.18));
+  animation: levelPop var(--dur-slow) var(--ease);
+  font-weight: 600;
+}
+
 /* Smart suggestion callout */
 .suggestion {
   display: flex;

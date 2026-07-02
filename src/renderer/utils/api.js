@@ -108,6 +108,15 @@ const mock = {
       saveDb(d);
       return { id };
     },
+    async reorder(orderedIds) {
+      const d = defaults();
+      orderedIds.forEach((id, i) => {
+        const t = d.tasks.find((x) => x.id === id);
+        if (t) t.sortOrder = i;
+      });
+      saveDb(d);
+      return d.tasks;
+    },
     async setCompleted(id, isCompleted) {
       const d = defaults();
       const t = d.tasks.find((x) => x.id === id);

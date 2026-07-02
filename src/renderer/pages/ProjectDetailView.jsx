@@ -5,6 +5,7 @@ import { useProjectStore } from '../store/projectStore';
 import { useTaskStore } from '../store/taskStore';
 import TaskInput from '../components/TaskInput';
 import TaskCard from '../components/TaskCard';
+import SortableTaskList from '../components/SortableTaskList';
 import ProjectForm from '../components/ProjectForm';
 import ConfirmDialog from '../components/ConfirmDialog';
 import ProgressRing from '../components/ProgressRing';
@@ -22,7 +23,7 @@ export default function ProjectDetailView() {
 
   const { active, done, pct } = useMemo(() => {
     const mine = tasks.filter((t) => t.projectId === id);
-    const active = sortTasks(mine.filter((t) => !t.isCompleted), 'priority');
+    const active = sortTasks(mine.filter((t) => !t.isCompleted), 'manual');
     const done = mine.filter((t) => t.isCompleted);
     return { active, done, pct: mine.length ? done.length / mine.length : 0 };
   }, [tasks, id]);
@@ -61,11 +62,7 @@ export default function ProjectDetailView() {
       <TaskInput defaults={{ projectId: project.id }} />
 
       {active.length > 0 ? (
-        <div className="task-list">
-          {active.map((t) => (
-            <TaskCard key={t.id} task={t} />
-          ))}
-        </div>
+        <SortableTaskList tasks={active} />
       ) : (
         <EmptyState title="No active tasks">
           Add the first task for this project above.

@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('momentum', {
     create: (input) => ipcRenderer.invoke('tasks:create', input),
     update: (id, updates) => ipcRenderer.invoke('tasks:update', id, updates),
     remove: (id) => ipcRenderer.invoke('tasks:remove', id),
+    reorder: (ids) => ipcRenderer.invoke('tasks:reorder', ids),
     setCompleted: (id, isCompleted) =>
       ipcRenderer.invoke('tasks:setCompleted', id, isCompleted),
   },

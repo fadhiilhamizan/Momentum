@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
-import { ListChecks } from 'lucide-react';
+import { ListChecks, GripVertical } from 'lucide-react';
 import { useTaskStore } from '../store/taskStore';
 import TaskInput from '../components/TaskInput';
 import TaskCard from '../components/TaskCard';
+import SortableTaskList from '../components/SortableTaskList';
 import EmptyState from '../components/EmptyState';
 import { sortTasks } from '../utils/taskHelpers';
 
@@ -12,6 +13,7 @@ const STATUS = [
   { value: 'all', label: 'All' },
 ];
 const SORTS = [
+  { value: 'manual', label: 'Manual' },
   { value: 'priority', label: 'Priority' },
   { value: 'due', label: 'Due date' },
   { value: 'created', label: 'Recent' },
@@ -21,7 +23,7 @@ const SORTS = [
 export default function AllTasksView() {
   const tasks = useTaskStore((s) => s.tasks);
   const [status, setStatus] = useState('active');
-  const [sort, setSort] = useState('priority');
+  const [sort, setSort] = useState('manual');
 
   const list = useMemo(() => {
     let l = tasks;
@@ -29,6 +31,9 @@ export default function AllTasksView() {
     else if (status === 'completed') l = l.filter((t) => t.isCompleted);
     return sortTasks(l, sort);
   }, [tasks, status, sort]);
+
+  // Drag-reorder is only meaningful for the active manual list.
+  const draggable = sort === 'manual' && status === 'active';
 
   return (
     <div className="view">
@@ -72,12 +77,21 @@ export default function AllTasksView() {
 
       <TaskInput />
 
-      {list.length > 0 ? (
-        <div className="task-list">
-          {list.map((t) => (
-            <TaskCard key={t.id} task={t} />
-          ))}
+      {draggable && list.length > 1 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-3)', fontSize: 'var(--fs-tiny)', margin: '0 0 var(--sp-2) 2px' }}>
+          <GripVertical size={12} /> Drag the handle to reorder
         </div>
+      )}
+      {list.length > 0 ? (
+        draggable ? (
+          <SortableTaskList tasks={list} />
+        ) : (
+          <div className="task-list">
+            {list.map((t) => (
+              <TaskCard key={t.id} task={t} />
+            ))}
+          </div>
+        )
       ) : (
         <EmptyState icon={<ListChecks size={26} />} title="Nothing here yet">
           {status === 'completed'

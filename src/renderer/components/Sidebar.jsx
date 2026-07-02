@@ -10,10 +10,12 @@ import {
   Settings,
   Info,
   Flame,
+  HelpCircle,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTaskStore } from '../store/taskStore';
 import { useUserStore } from '../store/userStore';
+import { useUiStore } from '../store/uiStore';
 import { levelFromXp, xpFromCompletions } from '../utils/gamification';
 import { todayKey } from '../utils/dateHelpers';
 
@@ -32,6 +34,7 @@ export default function Sidebar() {
   const tasks = useTaskStore((s) => s.tasks);
   const streak = useUserStore((s) => s.streak);
   const streakBump = useUserStore((s) => s.streakBump);
+  const openHelp = useUiStore((s) => s.openHelp);
 
   const openCount = tasks.filter((t) => !t.isCompleted).length;
   const starredCount = tasks.filter((t) => t.isStarred && !t.isCompleted).length;
@@ -112,6 +115,10 @@ export default function Sidebar() {
             </div>
           </div>
         </div>
+
+        <button className="help-btn" onClick={openHelp} title="Help & shortcuts (?)">
+          <HelpCircle size={14} /> Help & shortcuts
+        </button>
       </div>
     </aside>
   );
