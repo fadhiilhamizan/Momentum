@@ -6,6 +6,18 @@ Electron + React 18 + SQLite (WebAssembly) + Zustand.
 
 ---
 
+## Download
+
+Grab the latest build for your OS from the [**Releases**](https://github.com/fadhiilhamizan/Momentum/releases) page:
+
+- **Windows** — `Momentum-<version> Setup.exe` (installer) or the portable `.zip`
+- **macOS** — `.zip` (Apple Silicon)
+- **Linux** — `.deb`, `.rpm`, or the portable `.zip`
+
+Installed apps check GitHub Releases hourly and self-update in the background. Builds are
+currently unsigned, so on first launch you may see a Gatekeeper (macOS) or SmartScreen
+(Windows) warning — choose "Open anyway" / "More info → Run anyway" to proceed.
+
 ## Status
 
 **Phases 1–4 complete** — MVP, Power Features, Intelligence, and a packaged installer.
@@ -38,30 +50,60 @@ Electron + React 18 + SQLite (WebAssembly) + Zustand.
 | **Animated background, confetti, level-up, count-ups, button shine** | ✅ (Phase 4) |
 | **Windows installer** (`npm run make`) + app icon + auto-update packaging | ✅ (Phase 4) |
 
+### Recent additions
+
+- **Command palette** (`Ctrl/Cmd + K`) — fuzzy-jump to any view, run quick actions, or search open tasks.
+- **All Tasks filters** — narrow by priority, energy, project and tag (on top of status + sort).
+- **Advanced options at task creation** — set notes, best time, repeat, tags and subtasks up front.
+- **System theme** — Dark / Light / **System** (follows your OS appearance, live).
+- **Undo on delete** — deleting a task shows an Undo toast that restores it.
+- **Persistent focus timer** — a running Pomodoro session survives a reload/restart (wall-clock accurate).
+- **Reflection uses SVG icons** (no emoji) and history shows mood trends.
+- **Danger Zone** — wipe all local data behind a confirmation, in Settings.
+- **Backups include your streak**, and import restores it.
+- **Cross-platform releases** — Windows, macOS and Linux built and published automatically via GitHub Actions.
+
 ## Quick start
 
 ```bash
-npm install      # already done
+npm install      # install dependencies
 npm start        # launch the Electron app (Forge dev, HMR)
-npm run make     # build the installer (see Distribution below)
+npm run make     # build for your platform (see Distribution below)
 ```
 
 ## Distribution
 
-`npm run make` produces a Windows installer under `out/make/`:
+### Releasing a new version (automated)
 
-- `squirrel.windows/x64/Momentum-<version> Setup.exe` — the installer
-- `momentum-<version>-full.nupkg` + `RELEASES` — the Squirrel feed for **auto-updates**
+Commit your work, then cut a release with a version bump that tags the commit and triggers CI:
 
-The app icon is generated from `assets/logo.svg` by a pure-JS script (no native
-image tooling required):
+```bash
+git add -A && git commit -m "…"   # the release only includes committed code
+git push                          # push code + the workflow to GitHub
+
+npm run release:patch             # 1.0.0 → 1.0.1: bumps package.json, tags, pushes the tag
+# or: npm run release:minor / npm run release:major
+```
+
+Pushing the `v*` tag triggers [`.github/workflows/release.yml`](.github/workflows/release.yml),
+which builds on **macOS, Ubuntu and Windows** and publishes the installers to a GitHub Release
+using the built-in `GITHUB_TOKEN` (no personal access token required). Each release produces:
+
+- **Windows** — `Momentum-<version> Setup.exe` (+ `.nupkg` / `RELEASES` Squirrel feed for auto-update) and a portable `.zip`
+- **macOS** — a `.zip` (Apple Silicon)
+- **Linux** — `.deb`, `.rpm`, and a portable `.zip`
+
+The version is the single source of truth in `package.json`; the `release:*` scripts keep it
+advancing so releases never get stuck at one tag.
+
+### Building locally
+
+`npm run make` builds for your **current** platform under `out/make/`. The app icon is generated
+from `assets/logo.svg` by a pure-JS script (no native image tooling required):
 
 ```bash
 node scripts/make-icon.js   # regenerates assets/icon.png + assets/icon.ico
 ```
-
-macOS/Linux targets (`maker-zip`, `maker-deb`, `maker-rpm`) are configured and build
-when `make` runs on those platforms.
 
 > **Packaging note:** sql.js is loaded at runtime from packaged resources (not
 > webpack-bundled). Forge's webpack plugin strips `node_modules` from the asar, so
@@ -71,17 +113,15 @@ when `make` runs on those platforms.
 ### Auto-update
 
 The client is wired up with [`update-electron-app`](https://github.com/electron/update-electron-app)
-(free, backed by update.electronjs.org — no server to run). It activates when packaged
-and a public GitHub repo with published Releases is configured:
+(free, backed by update.electronjs.org — no server to run). Packaged builds default to this
+repo, so installed apps check GitHub Releases hourly and apply updates via Squirrel with no
+extra configuration.
 
-```bash
-# Point at your repo, then rebuild + publish the out/make artifacts to GitHub Releases
-set MOMENTUM_UPDATE_REPO=your-user/momentum   # Windows (PowerShell: $env:MOMENTUM_UPDATE_REPO=...)
-npm run make
-```
-
-Installed apps then check for updates hourly and apply them via Squirrel. Without the
-env var it no-ops (logged to `%APPDATA%/Momentum/momentum-main.log`).
+- Requires a **public** repo with **published** (non-draft) Releases — update.electronjs.org
+  can't read private repos or drafts.
+- If you fork, point it at your own repo by setting `MOMENTUM_UPDATE_REPO=your-user/your-repo`
+  (PowerShell: `$env:MOMENTUM_UPDATE_REPO=...`) before building.
+- Update activity is logged to `%APPDATA%/Momentum/momentum-main.log`.
 
 ### Code signing (avoiding SmartScreen)
 
@@ -110,9 +150,12 @@ npm run make
 
 ## Backup & restore
 
-Settings → **Data** → **Export** writes a JSON backup of all tasks, projects and
-reflections. **Import** merges a backup back in (idempotent by id / reflection date),
-so it's safe to re-import or move data between machines.
+Settings → **Data** → **Export** writes a JSON backup of all tasks, projects, reflections
+and your streak. **Import** merges a backup back in (idempotent by id / reflection date, and
+it restores your streak), so it's safe to re-import or move data between machines.
+
+Settings → **Danger Zone** → **Delete all data** wipes all local content behind a confirmation
+— handy for starting fresh. Your preferences (theme, sound, etc.) are left intact.
 
 ## Architecture
 
@@ -149,6 +192,7 @@ The spec calls for SQLite. `better-sqlite3` is a **native** module that must be 
 
 | Shortcut | Action |
 | --- | --- |
+| `Ctrl/Cmd + K` | Command palette (search + jump) |
 | `Ctrl/Cmd + N` | New task (jump to Today, focus input) |
 | `Ctrl/Cmd + T` | Today view |
 | `Ctrl/Cmd + Shift + P` | Projects |
@@ -156,5 +200,6 @@ The spec calls for SQLite. `better-sqlite3` is a **native** module that must be 
 | `Ctrl/Cmd + ,` | Settings |
 | `Space` | Focus the task input |
 | `Enter` | Add task (from input) |
-| `Escape` | Blur / close |
-| Double-click a task title | Inline edit |
+| `Escape` | Blur / close a dialog or focus session |
+| `?` | Help & shortcuts |
+| Click a task | Open its details |
