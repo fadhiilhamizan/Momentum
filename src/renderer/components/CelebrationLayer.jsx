@@ -65,11 +65,11 @@ export default function CelebrationLayer() {
       {toast && (
         <div className={cn('toast', { levelup: toast.variant === 'levelup' })} key={toast.id}>
           {toast.icon === 'flame' ? (
-            <Flame size={16} color="var(--gold)" />
+            <Flame size={16} color="var(--gold-text)" />
           ) : toast.icon === 'trophy' ? (
-            <Trophy size={16} color="var(--gold)" />
+            <Trophy size={16} color="var(--gold-text)" />
           ) : (
-            <Sparkles size={16} color="var(--gold)" />
+            <Sparkles size={16} color="var(--gold-text)" />
           )}
           {toast.message}
         </div>

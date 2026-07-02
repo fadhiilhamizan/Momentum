@@ -15,19 +15,22 @@ import {
 } from '../utils/analyticsHelpers';
 import { levelFromXp, xpFromCompletions } from '../utils/gamification';
 
-const TOOLTIP_STYLE = {
-  background: '#1a1815',
-  border: '1px solid #2a251f',
-  borderRadius: 8,
-  color: '#f5f5f0',
-  fontSize: 12,
-};
-
 export default function AnalyticsView() {
   const tasks = useTaskStore((s) => s.tasks);
   const projects = useProjectStore((s) => s.projects);
   const streak = useUserStore((s) => s.streak);
+  const theme = useUserStore((s) => s.settings.theme);
   const [period, setPeriod] = useState('month');
+
+  const isLight = theme === 'light';
+  const tooltipStyle = {
+    background: isLight ? '#ffffff' : '#1a1815',
+    border: `1px solid ${isLight ? '#e3ddd0' : '#2a251f'}`,
+    borderRadius: 8,
+    color: isLight ? '#1f1c17' : '#f5f5f0',
+    fontSize: 12,
+    boxShadow: isLight ? '0 4px 14px rgba(60,50,20,0.12)' : 'none',
+  };
 
   const data = useMemo(() => {
     const days = periodDays(period);
@@ -47,8 +50,8 @@ export default function AnalyticsView() {
   const cards = [
     { icon: CheckCircle2, label: 'Completed', value: data.completed, color: 'var(--success)' },
     { icon: ListTodo, label: 'Active', value: data.open, color: 'var(--energy)' },
-    { icon: Flame, label: 'Current streak', value: streak.currentStreak, color: 'var(--gold)' },
-    { icon: Trophy, label: 'Longest streak', value: streak.longestStreak, color: 'var(--gold-light)' },
+    { icon: Flame, label: 'Current streak', value: streak.currentStreak, color: 'var(--gold-text)' },
+    { icon: Trophy, label: 'Longest streak', value: streak.longestStreak, color: 'var(--gold-text)' },
   ];
 
   const tickInterval = Math.max(0, Math.floor(data.daily.length / 6) - 1);
@@ -103,7 +106,7 @@ export default function AnalyticsView() {
       <div className="panel-grid" style={{ marginBottom: 'var(--sp-4)' }}>
         <div className="panel">
           <div className="panel-title">
-            <TrendingUp size={15} color="var(--gold)" /> Completion trend
+            <TrendingUp size={15} color="var(--gold-text)" /> Completion trend
           </div>
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={data.daily} margin={{ top: 4, right: 6, left: -20, bottom: 0 }}>
@@ -127,7 +130,7 @@ export default function AnalyticsView() {
                 tickLine={false}
                 width={28}
               />
-              <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ stroke: '#3a3430' }} />
+              <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: isLight ? '#d8d1c2' : '#3a3430' }} />
               <Area
                 type="monotone"
                 dataKey="count"
@@ -142,7 +145,7 @@ export default function AnalyticsView() {
 
         <div className="panel">
           <div className="panel-title">
-            <PieIcon size={15} color="var(--gold)" /> By project
+            <PieIcon size={15} color="var(--gold-text)" /> By project
           </div>
           {data.breakdown.length > 0 ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-4)' }}>
@@ -163,7 +166,7 @@ export default function AnalyticsView() {
                         <Cell key={i} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={TOOLTIP_STYLE} />
+                    <Tooltip contentStyle={tooltipStyle} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -187,14 +190,14 @@ export default function AnalyticsView() {
 
       <div className="panel" style={{ marginBottom: 'var(--sp-4)' }}>
         <div className="panel-title">
-          <CalendarDays size={15} color="var(--gold)" /> Activity — last 13 weeks
+          <CalendarDays size={15} color="var(--gold-text)" /> Activity — last 13 weeks
         </div>
         <Heatmap data={data.hm} />
       </div>
 
       <div className="panel">
         <div className="panel-title">
-          <Lightbulb size={15} color="var(--gold)" /> Insights
+          <Lightbulb size={15} color="var(--gold-text)" /> Insights
         </div>
         {data.ins.map((line, i) => (
           <div className="insight-row" key={i}>

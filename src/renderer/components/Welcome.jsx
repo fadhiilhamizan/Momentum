@@ -24,7 +24,7 @@ export default function Welcome({ onFinish }) {
             <Flame size={28} />
           </div>
           <div className="welcome-title">
-            Welcome to Mo<span style={{ color: 'var(--gold)' }}>mentum</span>
+            Welcome to Mo<span style={{ color: 'var(--gold-text)' }}>mentum</span>
           </div>
           <div className="welcome-sub">
             A calm, rewarding way to get things done. Here's what makes it tick:

@@ -1,4 +1,6 @@
+const webpack = require('webpack');
 const rules = require('./webpack.rules');
+const pkg = require('./package.json');
 
 const cssRule = {
   test: /\.css$/,
@@ -12,6 +14,12 @@ module.exports = {
   module: {
     rules: [...rules, cssRule],
   },
+  plugins: [
+    // Single source of truth for the app version, injected at build time.
+    new webpack.DefinePlugin({
+      'process.env.APP_VERSION': JSON.stringify(pkg.version),
+    }),
+  ],
   resolve: {
     extensions: ['.js', '.jsx', '.css', '.json'],
   },

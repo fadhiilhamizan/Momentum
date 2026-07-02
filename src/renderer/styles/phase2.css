@@ -24,7 +24,7 @@
   border: 1px solid var(--divider);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-md);
-  animation: fadeIn var(--dur) var(--ease);
+  animation: popIn var(--dur) var(--ease);
 }
 .modal-head {
   display: flex;
@@ -109,9 +109,6 @@
   background-position: right 10px center;
   padding-right: 30px;
 }
-.date-input {
-  color-scheme: dark;
-}
 
 /* ------------------------------------------------------------------ */
 /* Tags                                                               */
@@ -131,7 +128,7 @@
   border-radius: var(--radius-pill);
   font-size: var(--fs-small);
   background: var(--gold-soft);
-  color: var(--gold-light);
+  color: var(--gold-text);
   border: 1px solid rgba(212, 175, 55, 0.3);
 }
 .tag-chip .remove {
@@ -140,7 +137,7 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  color: var(--gold-light);
+  color: var(--gold-text);
   opacity: 0.7;
 }
 .tag-chip .remove:hover {
@@ -165,7 +162,7 @@
   display: inline-flex;
   align-items: center;
   font-size: var(--fs-tiny);
-  color: var(--gold);
+  color: var(--gold-text);
 }
 
 /* ------------------------------------------------------------------ */
@@ -200,7 +197,7 @@
   transition: all var(--dur-fast) var(--ease);
 }
 .subtask-check:hover {
-  border-color: var(--gold);
+  border-color: var(--gold-text);
 }
 .subtask-check.done {
   background: var(--success);
@@ -286,7 +283,7 @@
   flex-shrink: 0;
 }
 .project-fav.on {
-  color: var(--gold);
+  color: var(--gold-text);
 }
 .project-desc {
   font-size: var(--fs-body);
@@ -313,7 +310,7 @@
   min-height: 132px;
 }
 .project-add-card:hover {
-  color: var(--gold);
+  color: var(--gold-text);
   border-color: rgba(212, 175, 55, 0.5);
   transform: translateY(-2px);
 }
@@ -367,7 +364,7 @@
   font-size: var(--fs-tiny);
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: var(--gold);
+  color: var(--gold-text);
 }
 .focus-task {
   font-size: var(--fs-h1);
@@ -553,7 +550,7 @@ body.overlay-open .main-pane {
 }
 .segmented button.active {
   background: var(--gold-soft);
-  color: var(--gold-light);
+  color: var(--gold-text);
 }
 
 /* Heatmap */
@@ -619,7 +616,7 @@ body.overlay-open .main-pane {
   border-bottom: none;
 }
 .insight-row .ico {
-  color: var(--gold);
+  color: var(--gold-text);
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -661,7 +658,7 @@ body.overlay-open .main-pane {
   transform: translateY(-2px);
 }
 .mood-btn.selected {
-  border-color: var(--gold);
+  border-color: var(--gold-text);
   background: var(--gold-soft);
 }
 .reflect-history-item {
@@ -673,7 +670,7 @@ body.overlay-open .main-pane {
 }
 .reflect-date {
   font-size: var(--fs-small);
-  color: var(--gold);
+  color: var(--gold-text);
   font-weight: 600;
   margin-bottom: var(--sp-1);
 }
@@ -691,7 +688,7 @@ body.overlay-open .main-pane {
   box-shadow: var(--shadow-md);
   padding: var(--sp-8) var(--sp-8) var(--sp-6);
   text-align: center;
-  animation: fadeIn var(--dur-slow) var(--ease);
+  animation: popIn var(--dur-slow) var(--ease);
   position: relative;
   overflow: hidden;
 }
@@ -747,7 +744,7 @@ body.overlay-open .main-pane {
   height: 34px;
   border-radius: 9px;
   background: var(--gold-soft);
-  color: var(--gold);
+  color: var(--gold-text);
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -822,7 +819,7 @@ body.overlay-open .main-pane {
   transition: all var(--dur-fast) var(--ease);
 }
 .help-btn:hover {
-  color: var(--gold);
+  color: var(--gold-text);
   border-color: rgba(212, 175, 55, 0.4);
 }
 
@@ -859,7 +856,7 @@ body.overlay-open .main-pane {
 }
 .drag-handle:hover {
   opacity: 1;
-  color: var(--gold);
+  color: var(--gold-text);
 }
 .sortable-content {
   flex: 1;
@@ -922,7 +919,7 @@ body.overlay-open .main-pane {
   animation: fadeIn var(--dur) var(--ease);
 }
 .suggestion .ico {
-  color: var(--gold);
+  color: var(--gold-text);
   flex-shrink: 0;
 }
 .suggestion .body {

@@ -158,7 +158,7 @@ export default function TaskDetail() {
       </div>
 
       {task.isRecurring && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-2)', color: 'var(--gold)', fontSize: 'var(--fs-small)', marginTop: 'calc(-1 * var(--sp-2))' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-2)', color: 'var(--gold-text)', fontSize: 'var(--fs-small)', marginTop: 'calc(-1 * var(--sp-2))' }}>
           <Repeat size={13} /> Completing this task schedules the next one automatically.
         </div>
       )}

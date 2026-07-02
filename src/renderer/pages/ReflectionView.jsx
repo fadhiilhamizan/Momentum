@@ -44,7 +44,6 @@ export default function ReflectionView() {
   };
 
   const set = (key, value) => setEntry((e) => ({ ...e, [key]: value }));
-  const past = history.filter((r) => r.date !== today);
 
   return (
     <div className="view">
@@ -92,12 +91,13 @@ export default function ReflectionView() {
 
       <div className="panel">
         <div className="panel-title">
-          <NotebookPen size={15} color="var(--gold)" /> Recent reflections
+          <NotebookPen size={15} color="var(--gold-text)" /> Your reflections
         </div>
-        {past.length > 0 ? (
-          past.map((r) => (
+        {history.length > 0 ? (
+          history.map((r) => (
             <div className="reflect-history-item" key={r.id || r.date}>
               <div className="reflect-date">
+                {r.date === today ? 'Today · ' : ''}
                 {format(parseISO(r.date), 'EEEE, MMM d')} {r.mood || ''}
               </div>
               <div style={{ color: 'var(--text-2)', fontSize: 'var(--fs-body)', lineHeight: 1.5 }}>
@@ -109,7 +109,7 @@ export default function ReflectionView() {
           ))
         ) : (
           <div style={{ color: 'var(--text-3)', padding: 'var(--sp-4) 0' }}>
-            Your past reflections will collect here.
+            Save your first reflection above and it will appear here.
           </div>
         )}
       </div>

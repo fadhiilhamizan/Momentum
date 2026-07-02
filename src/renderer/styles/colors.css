@@ -4,6 +4,8 @@
 
 :root,
 :root[data-theme='dark'] {
+  color-scheme: dark;
+
   /* Backgrounds & surfaces */
   --bg: #0f0e0c;
   --surface-1: #1a1815;
@@ -16,6 +18,8 @@
   --gold-dark: #b8941f;
   --gold-soft: rgba(212, 175, 55, 0.12);
   --gold-glow: rgba(212, 175, 55, 0.28);
+  /* Gold used for TEXT — bright on dark, darker on light for contrast. */
+  --gold-text: #e8c547;
 
   /* Text */
   --text-1: #f5f5f0;
@@ -59,15 +63,22 @@
 
 /* Optional light theme — activated with data-theme="light" on <html>. */
 :root[data-theme='light'] {
+  color-scheme: light;
+
   --bg: #faf8f3;
   --surface-1: #ffffff;
   --surface-2: #f2efe8;
   --surface-3: #e8e3d8;
   --text-1: #1f1c17;
   --text-2: #5c574d;
-  --text-3: #8b8680;
+  --text-3: #7a746a;
   --border: #e3ddd0;
   --divider: #d8d1c2;
   --shadow-sm: 0 2px 8px rgba(60, 50, 20, 0.08);
   --shadow-md: 0 6px 20px rgba(60, 50, 20, 0.12);
+
+  /* Darker gold reads properly on light surfaces. */
+  --gold-text: #a07d12;
+  --gold-soft: rgba(184, 148, 31, 0.14);
+  --success-glow: rgba(124, 179, 66, 0.25);
 }

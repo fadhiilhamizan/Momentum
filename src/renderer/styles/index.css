@@ -29,7 +29,7 @@ body {
 
 ::selection {
   background: var(--gold-soft);
-  color: var(--gold-light);
+  color: var(--gold-text);
 }
 
 /* Scrollbars */
@@ -95,7 +95,7 @@ textarea {
   height: 540px;
   top: -170px;
   right: -60px;
-  background: radial-gradient(circle, rgba(212, 175, 55, 0.16), transparent 70%);
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.18), transparent 70%);
   animation: bgDrift 18s var(--ease) infinite;
 }
 .app-bg::after {
@@ -103,8 +103,36 @@ textarea {
   height: 440px;
   bottom: -150px;
   left: 200px;
-  background: radial-gradient(circle, rgba(124, 179, 66, 0.08), transparent 70%);
+  background: radial-gradient(circle, rgba(124, 179, 66, 0.09), transparent 70%);
   animation: bgDrift 24s var(--ease) infinite reverse;
+}
+/* Slow rotating aurora sweep for extra depth. */
+.app-bg-aurora {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 170vmax;
+  height: 170vmax;
+  margin-left: -85vmax;
+  margin-top: -85vmax;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(212, 175, 55, 0.06) 55deg,
+    transparent 140deg,
+    rgba(100, 181, 246, 0.04) 210deg,
+    transparent 290deg,
+    rgba(124, 179, 66, 0.05) 340deg,
+    transparent 360deg
+  );
+  animation: bgRotate 70s linear infinite;
+  will-change: transform;
+}
+:root[data-theme='light'] .app-bg::before {
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.14), transparent 70%);
+}
+:root[data-theme='light'] .app-bg-aurora {
+  opacity: 0.6;
 }
 
 .sidebar,
@@ -162,7 +190,7 @@ textarea {
   letter-spacing: 0.02em;
 }
 .brand-name .accent {
-  color: var(--gold);
+  color: var(--gold-text);
 }
 
 .nav {
@@ -197,7 +225,7 @@ textarea {
 }
 .nav-item.active {
   background: var(--gold-soft);
-  color: var(--gold-light);
+  color: var(--gold-text);
 }
 .nav-item.active::before {
   content: '';
@@ -240,7 +268,7 @@ textarea {
   gap: var(--sp-2);
 }
 .streak-flame {
-  color: var(--gold);
+  color: var(--gold-text);
   display: grid;
   place-items: center;
 }
@@ -315,7 +343,7 @@ textarea {
   height: 48px;
   border-radius: 12px;
   background: var(--gold-soft);
-  color: var(--gold);
+  color: var(--gold-text);
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -336,7 +364,7 @@ textarea {
 .banner-stat .big {
   font-size: var(--fs-display);
   font-weight: 700;
-  color: var(--gold);
+  color: var(--gold-text);
   line-height: 1;
 }
 .banner-stat .label {
@@ -369,7 +397,7 @@ textarea {
   gap: var(--sp-3);
 }
 .task-input-row .plus {
-  color: var(--gold);
+  color: var(--gold-text);
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -433,7 +461,7 @@ button.pill:hover {
 .pill.selected {
   border-color: rgba(212, 175, 55, 0.5);
   background: var(--gold-soft);
-  color: var(--gold-light);
+  color: var(--gold-text);
 }
 .pill .dot {
   width: 8px;
@@ -556,7 +584,6 @@ button.pill:hover {
   transition: transform var(--dur-fast) var(--ease),
     box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease),
     opacity var(--dur) var(--ease);
-  animation: fadeIn var(--dur) var(--ease);
   position: relative;
 }
 .task-card:hover {
@@ -591,7 +618,7 @@ button.pill:hover {
   color: transparent;
 }
 .checkbox:hover {
-  border-color: var(--gold);
+  border-color: var(--gold-text);
 }
 .checkbox.done {
   background: var(--success);
@@ -664,7 +691,7 @@ button.pill:hover {
   opacity: 1;
 }
 .star-btn.starred {
-  color: var(--gold);
+  color: var(--gold-text);
   opacity: 1;
 }
 
@@ -684,7 +711,7 @@ button.pill:hover {
   margin: 0 auto var(--sp-4);
   border-radius: 16px;
   background: var(--surface-2);
-  color: var(--gold);
+  color: var(--gold-text);
   display: grid;
   place-items: center;
 }
@@ -771,9 +798,143 @@ button.pill:hover {
   font-size: var(--fs-tiny);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--gold);
+  color: var(--gold-text);
   background: var(--gold-soft);
   padding: 3px 10px;
   border-radius: var(--radius-pill);
   margin-bottom: var(--sp-4);
+}
+
+/* ------------------------------------------------------------------ */
+/* Motion polish                                                      */
+/* ------------------------------------------------------------------ */
+
+/* Sidebar + nav */
+.sidebar {
+  animation: slideInLeft 0.4s var(--ease) both;
+}
+.nav-item {
+  will-change: transform;
+}
+.nav-item:hover {
+  transform: translateX(3px);
+}
+.nav-item.active::before {
+  animation: popIn var(--dur) var(--ease);
+}
+.brand-mark {
+  animation: floatY 5s var(--ease) infinite;
+}
+.streak-flame {
+  animation: flameFlicker 3.2s var(--ease) infinite;
+  transform-origin: center bottom;
+}
+
+/* Interactive feedback */
+.icon-btn {
+  will-change: transform;
+}
+.icon-btn:hover {
+  transform: scale(1.12);
+}
+button.pill {
+  will-change: transform;
+}
+button.pill:hover {
+  transform: translateY(-1px);
+}
+
+/* Banner */
+.momentum-banner .banner-icon {
+  animation: floatY 4s var(--ease) infinite;
+}
+.momentum-banner {
+  position: relative;
+  overflow: hidden;
+}
+.momentum-banner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  left: -60%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(255, 255, 255, 0.08),
+    transparent
+  );
+  transform: skewX(-18deg);
+  animation: bannerSweep 7s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes bannerSweep {
+  0%,
+  100% {
+    left: -60%;
+  }
+  55%,
+  70% {
+    left: 130%;
+  }
+}
+
+/* Staggered entrance for list children (task lists + project grid).
+   Works for plain rows and drag-wrapped rows alike. */
+.task-list > *,
+.project-grid > * {
+  animation: riseIn var(--dur) var(--ease) both;
+}
+.task-list > *:nth-child(1),
+.project-grid > *:nth-child(1) {
+  animation-delay: 0.02s;
+}
+.task-list > *:nth-child(2),
+.project-grid > *:nth-child(2) {
+  animation-delay: 0.06s;
+}
+.task-list > *:nth-child(3),
+.project-grid > *:nth-child(3) {
+  animation-delay: 0.1s;
+}
+.task-list > *:nth-child(4),
+.project-grid > *:nth-child(4) {
+  animation-delay: 0.14s;
+}
+.task-list > *:nth-child(5),
+.project-grid > *:nth-child(5) {
+  animation-delay: 0.18s;
+}
+.task-list > *:nth-child(6),
+.project-grid > *:nth-child(6) {
+  animation-delay: 0.22s;
+}
+.task-list > *:nth-child(7),
+.project-grid > *:nth-child(7) {
+  animation-delay: 0.26s;
+}
+.task-list > *:nth-child(n + 8),
+.project-grid > *:nth-child(n + 8) {
+  animation-delay: 0.3s;
+}
+
+/* Stat cards + panels + view headings ease in */
+.stat-grid > * {
+  animation: riseIn var(--dur) var(--ease) both;
+}
+.stat-grid > *:nth-child(2) {
+  animation-delay: 0.05s;
+}
+.stat-grid > *:nth-child(3) {
+  animation-delay: 0.1s;
+}
+.stat-grid > *:nth-child(4) {
+  animation-delay: 0.15s;
+}
+.panel {
+  animation: riseIn var(--dur-slow) var(--ease) both;
+}
+.view-head {
+  animation: riseIn var(--dur) var(--ease) both;
 }

@@ -106,7 +106,7 @@ export default function TaskCard({ task }) {
 
           {task.isRecurring && (
             <span className="tag" title="Recurring task">
-              <Repeat size={11} color="var(--gold)" />
+              <Repeat size={11} color="var(--gold-text)" />
             </span>
           )}
 

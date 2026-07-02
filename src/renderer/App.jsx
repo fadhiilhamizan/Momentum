@@ -129,7 +129,9 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <div className="app-bg" />
+      <div className="app-bg">
+        <div className="app-bg-aurora" />
+      </div>
       <Sidebar />
       <main className="main-pane">
         <Routes>

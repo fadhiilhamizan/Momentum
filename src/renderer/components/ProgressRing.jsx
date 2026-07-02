@@ -42,7 +42,7 @@ export default function ProgressRing({
             placeItems: 'center',
             fontSize: 'var(--fs-small)',
             fontWeight: 700,
-            color: 'var(--gold)',
+            color: 'var(--gold-text)',
           }}
         >
           {children}

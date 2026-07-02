@@ -219,7 +219,7 @@ export default function SettingsView() {
 
       <Section title="Storage engine">
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--sp-3)', color: 'var(--text-2)', fontSize: 'var(--fs-body-lg)', lineHeight: 1.5 }}>
-          <Database size={18} color="var(--gold)" style={{ flexShrink: 0, marginTop: 2 }} />
+          <Database size={18} color="var(--gold-text)" style={{ flexShrink: 0, marginTop: 2 }} />
           <div>
             {isElectron
               ? 'SQLite (WebAssembly build) — no native compilation required.'
