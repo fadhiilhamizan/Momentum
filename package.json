@@ -10,7 +10,8 @@
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
-    "lint": "echo \"No linting configured\""
+    "lint": "echo \"No linting configured\"",
+    "publish": "electron-forge publish"
   },
   "keywords": [
     "productivity",
