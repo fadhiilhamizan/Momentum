@@ -62,7 +62,7 @@ export default function App() {
       useUiStore.getState().burstConfetti();
       useUiStore
         .getState()
-        .showToast(`Level up! You're now Level ${info.level} — ${info.title}`, 'trophy', 'levelup');
+        .showToast(`Level up! You're now Level ${info.level}: ${info.title}`, 'trophy', 'levelup');
       playFanfare();
     }
     prevLevel.current = info.level;

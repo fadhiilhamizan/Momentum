@@ -67,7 +67,7 @@ export default function ReflectionView() {
     <div className="view">
       <div className="view-head">
         <div className="view-title">Reflection</div>
-        <div className="view-subtitle">{fullDate()} — a quiet moment to close the day</div>
+        <div className="view-subtitle">{fullDate()} · a quiet moment to close the day</div>
       </div>
 
       <div className="panel" style={{ marginBottom: 'var(--sp-4)' }}>

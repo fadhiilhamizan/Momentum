@@ -43,7 +43,7 @@ export function notify(title, body, opts = {}) {
 export function testNotification() {
   notify(
     '🔥 Momentum',
-    "Notifications are on — you'll get a daily briefing of your top tasks."
+    "Notifications are on. You'll get a daily briefing of your top tasks."
   );
 }
 
@@ -64,7 +64,7 @@ export function buildBriefing(tasks) {
   if (today.length) parts.push(`${today.length} for today`);
 
   return {
-    title: `Good day — ${total} task${total === 1 ? '' : 's'} on deck`,
+    title: `Good day, ${total} task${total === 1 ? '' : 's'} on deck`,
     body: `${parts.join(' · ')}. Start with: ${top.title}`,
   };
 }

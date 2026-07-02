@@ -202,7 +202,7 @@ export default function SettingsView() {
           {!supported()
             ? 'Notifications are not supported here.'
             : permission() === 'denied'
-            ? 'Blocked by your system — enable Momentum in OS notification settings.'
+            ? 'Blocked by your system. Enable Momentum in OS notification settings.'
             : 'A once-a-day briefing of your most important tasks.'}
         </div>
       </Section>
@@ -246,7 +246,7 @@ export default function SettingsView() {
           <Database size={18} color="var(--gold-text)" style={{ flexShrink: 0, marginTop: 2 }} />
           <div>
             {isElectron
-              ? 'SQLite (WebAssembly build) — no native compilation required.'
+              ? 'SQLite (WebAssembly build), no native compilation required.'
               : 'Browser localStorage (preview mode). Launch the desktop app for the full SQLite database.'}
           </div>
         </div>
@@ -256,7 +256,7 @@ export default function SettingsView() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-4)', flexWrap: 'wrap' }}>
           <div style={{ color: 'var(--text-2)', fontSize: 'var(--fs-body-lg)', lineHeight: 1.5, flex: 1, minWidth: 220 }}>
             Permanently delete every task, project and reflection, and reset your streak.
-            This can’t be undone — export a backup first if you might want your data back.
+            This can’t be undone. Export a backup first if you might want your data back.
           </div>
           <button
             className="btn btn-ghost"

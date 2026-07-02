@@ -74,7 +74,7 @@ export default function AllTasksView() {
       <div className="view-head">
         <div className="view-title">All Tasks</div>
         <div className="view-subtitle">
-          Everything in one place — {tasks.filter((t) => !t.isCompleted).length}{' '}
+          Everything in one place · {tasks.filter((t) => !t.isCompleted).length}{' '}
           active
         </div>
       </div>

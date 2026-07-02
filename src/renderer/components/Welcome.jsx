@@ -3,7 +3,7 @@ import { Flame, Target, Timer, BarChart3, ArrowRight } from 'lucide-react';
 import { lockScroll, unlockScroll } from '../utils/scrollLock';
 
 const FEATURES = [
-  { icon: Target, title: 'Plan by energy', desc: 'Match tasks to how you feel — low, medium or high energy.' },
+  { icon: Target, title: 'Plan by energy', desc: 'Match tasks to how you feel: low, medium or high energy.' },
   { icon: Timer, title: 'Focus sessions', desc: 'A built-in Pomodoro timer to help you get into deep work.' },
   { icon: Flame, title: 'Build streaks', desc: 'Finish something each day and watch your streak grow.' },
   { icon: BarChart3, title: 'See your progress', desc: 'Charts, heatmaps and insights into your momentum.' },

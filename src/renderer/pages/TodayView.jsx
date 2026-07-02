@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, useEffect } from 'react';
 import { Sparkles, Zap, Clock, TrendingUp, CheckCircle2, Wand2, Timer } from 'lucide-react';
 import { useTaskStore } from '../store/taskStore';
 import { useUserStore } from '../store/userStore';
@@ -10,6 +10,7 @@ import EmptyState from '../components/EmptyState';
 import CountUp from '../components/CountUp';
 import { groupByEnergy, suggestForBudget, sortTasks } from '../utils/taskHelpers';
 import { isOverdue, isDueToday, greeting, fullDate } from '../utils/dateHelpers';
+import { getMotivation } from '../utils/motivation';
 
 const TIME_BUDGETS = [
   { value: 15, label: '15 min' },
@@ -27,6 +28,27 @@ export default function TodayView() {
 
   const [energyFilter, setEnergyFilter] = useState(null);
   const [timeBudget, setTimeBudget] = useState(null);
+
+  // A fresh, context-aware motivation on every visit to Today. Picked once the
+  // task list has loaded (so the context is real) and re-picked on each remount.
+  const buildMotivation = () => {
+    const all = useTaskStore.getState().tasks;
+    const active = all.filter((t) => !t.isCompleted);
+    const done = all.filter((t) => t.isCompleted);
+    return getMotivation({
+      streak: useUserStore.getState().streak.currentStreak,
+      allDone: active.length === 0 && done.length > 0,
+      empty: all.length === 0,
+    });
+  };
+  const [motivation, setMotivation] = useState(() =>
+    useTaskStore.getState().loading ? null : buildMotivation()
+  );
+  useEffect(() => {
+    if (motivation || loading) return;
+    setMotivation(buildMotivation());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, motivation]);
 
   const { overdue, todays, completedToday } = useMemo(() => {
     const overdue = [];
@@ -68,9 +90,9 @@ export default function TodayView() {
   const activeCount = filtered.filter((t) => !t.isCompleted).length;
   const showSuggestion = pick && (filtering || activeCount >= 2);
   const suggestionLead = timeBudget
-    ? `You have ${timeBudget < 60 ? `${timeBudget} min` : `${timeBudget / 60} hr`} — start with`
+    ? `You have ${timeBudget < 60 ? `${timeBudget} min` : `${timeBudget / 60} hr`}, start with`
     : energyFilter
-    ? `${energyFilter} energy — start with`
+    ? `${energyFilter} energy, start with`
     : 'Your momentum pick';
   const allDone = todays.length === 0 && overdue.length === 0 && completedToday.length > 0;
 
@@ -96,7 +118,7 @@ export default function TodayView() {
           </div>
           <div className="banner-sub">
             {allDone
-              ? 'Everything for today is done. Take a breath — or get ahead.'
+              ? 'Everything for today is done. Take a breath, or get ahead.'
               : `${todays.length + overdue.length} task${
                   todays.length + overdue.length === 1 ? '' : 's'
                 } on deck. Complete one to keep your streak alive.`}
@@ -107,6 +129,14 @@ export default function TodayView() {
           <div className="label">day streak</div>
         </div>
       </div>
+
+      {/* Rotating, context-aware motivation */}
+      {motivation && (
+        <div className="today-motivation">
+          <Sparkles size={15} />
+          <span>{motivation}</span>
+        </div>
+      )}
 
       {/* Quick energy / time selector */}
       <div className="quick-bar">

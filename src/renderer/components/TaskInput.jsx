@@ -10,6 +10,9 @@ import TagEditor from './TagEditor';
 import SubtaskEditor from './SubtaskEditor';
 import { BEST_TIMES } from '../utils/taskHelpers';
 import { RECURRENCE_OPTIONS } from '../utils/recurrence';
+import {
+  todayKey, toDateInputValue, toTimeInputValue, combineDateAndTime,
+} from '../utils/dateHelpers';
 
 /**
  * Inline task creator. Type a title and press Enter to add. The options row
@@ -85,9 +88,15 @@ const TaskInput = forwardRef(function TaskInput({ defaults = {} }, ref) {
   return (
     <div className={cn('task-input', { focused })}>
       <div className="task-input-row">
-        <span className="plus">
+        <button
+          type="button"
+          className="plus"
+          onClick={submit}
+          title="Add task"
+          aria-label="Add task"
+        >
           <Plus size={18} />
-        </span>
+        </button>
         <input
           ref={inputRef}
           className="title"
@@ -95,8 +104,12 @@ const TaskInput = forwardRef(function TaskInput({ defaults = {} }, ref) {
           value={title}
           list={listId}
           autoComplete="off"
+          aria-required="true"
           onChange={(e) => setTitle(e.target.value)}
-          onFocus={() => setFocused(true)}
+          onFocus={() => {
+            setFocused(true);
+            setExpanded(true);
+          }}
           onBlur={() => setFocused(false)}
           onKeyDown={onKeyDown}
         />
@@ -105,6 +118,9 @@ const TaskInput = forwardRef(function TaskInput({ defaults = {} }, ref) {
             <option key={s} value={s} />
           ))}
         </datalist>
+        <span className="task-required" title="A title is required">
+          *
+        </span>
         <button
           type="button"
           className="icon-btn"
@@ -122,6 +138,10 @@ const TaskInput = forwardRef(function TaskInput({ defaults = {} }, ref) {
           className="task-input-options animate-in"
           style={{ flexDirection: 'column', alignItems: 'stretch', gap: 'var(--sp-3)' }}
         >
+          <div className="task-input-optnote">
+            <span className="task-required">*</span> Only a title is required. Everything
+            below is optional.
+          </div>
           <OptionRow label="Priority">
             <PrioritySelector value={priority} onChange={setPriority} />
           </OptionRow>
@@ -137,19 +157,30 @@ const TaskInput = forwardRef(function TaskInput({ defaults = {} }, ref) {
             </div>
           </OptionRow>
           <OptionRow label="Due">
-            <input
-              type="date"
-              className="date-input"
-              style={{ width: 200 }}
-              value={dueDate ? new Date(dueDate).toISOString().slice(0, 10) : ''}
-              onChange={(e) =>
-                setDueDate(
-                  e.target.value
-                    ? new Date(e.target.value + 'T00:00:00').toISOString()
-                    : null
-                )
-              }
-            />
+            <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap' }}>
+              <input
+                type="date"
+                className="date-input"
+                style={{ width: 160 }}
+                aria-label="Due date"
+                value={toDateInputValue(dueDate)}
+                onChange={(e) =>
+                  setDueDate(combineDateAndTime(e.target.value, toTimeInputValue(dueDate)))
+                }
+              />
+              <input
+                type="time"
+                className="date-input"
+                style={{ width: 130 }}
+                aria-label="Due time (optional)"
+                value={toTimeInputValue(dueDate)}
+                onChange={(e) => {
+                  // A time on its own defaults the date to today.
+                  const dateStr = toDateInputValue(dueDate) || (e.target.value ? todayKey() : '');
+                  setDueDate(combineDateAndTime(dateStr, e.target.value));
+                }}
+              />
+            </div>
           </OptionRow>
 
           <div className="task-input-advanced">

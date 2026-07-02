@@ -85,3 +85,37 @@ export function todayKey() {
 export function fullDate(date = new Date()) {
   return format(date, 'EEEE, MMMM d');
 }
+
+/** yyyy-MM-dd (local) for an <input type="date">. */
+export function toDateInputValue(iso) {
+  const d = parse(iso);
+  if (!d || Number.isNaN(d.getTime())) return '';
+  const off = d.getTimezoneOffset();
+  return new Date(d.getTime() - off * 60000).toISOString().slice(0, 10);
+}
+
+/** HH:mm (local) for an <input type="time">, or '' when the time is midnight
+    (which we treat as "date only, no specific time"). */
+export function toTimeInputValue(iso) {
+  const d = parse(iso);
+  if (!d || Number.isNaN(d.getTime())) return '';
+  const off = d.getTimezoneOffset();
+  const hhmm = new Date(d.getTime() - off * 60000).toISOString().slice(11, 16);
+  return hhmm === '00:00' ? '' : hhmm;
+}
+
+/** Combine a date (yyyy-MM-dd) and optional time (HH:mm) into a local ISO
+    string. Returns null when no date is given; an empty time means midnight. */
+export function combineDateAndTime(dateStr, timeStr) {
+  if (!dateStr) return null;
+  const d = new Date(`${dateStr}T${timeStr || '00:00'}`);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
+
+/** "3:30 PM" when a due date carries a specific (non-midnight) time, else null. */
+export function dueTime(iso) {
+  const d = parse(iso);
+  if (!d || Number.isNaN(d.getTime())) return null;
+  if (toTimeInputValue(iso) === '') return null;
+  return format(d, 'h:mm a');
+}

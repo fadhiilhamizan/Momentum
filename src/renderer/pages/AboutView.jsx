@@ -57,7 +57,7 @@ export default function AboutView() {
             padding: '4px 12px',
           }}
         >
-          Version {version || '—'}
+          Version {version || '…'}
         </div>
       </div>
     </div>

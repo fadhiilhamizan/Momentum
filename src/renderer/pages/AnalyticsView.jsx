@@ -31,6 +31,9 @@ export default function AnalyticsView() {
     fontSize: 12,
     boxShadow: isLight ? '0 4px 14px rgba(60,50,20,0.12)' : 'none',
   };
+  // Recharts colors tooltip rows by the series/segment color by default, which
+  // can vanish against the dark surface — force a readable text color.
+  const tooltipItemStyle = { color: isLight ? '#1f1c17' : '#f5f5f0' };
 
   const data = useMemo(() => {
     const days = periodDays(period);
@@ -130,7 +133,7 @@ export default function AnalyticsView() {
                 tickLine={false}
                 width={28}
               />
-              <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: isLight ? '#d8d1c2' : '#3a3430' }} />
+              <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipItemStyle} cursor={{ stroke: isLight ? '#d8d1c2' : '#3a3430' }} />
               <Area
                 type="monotone"
                 dataKey="count"
@@ -166,7 +169,7 @@ export default function AnalyticsView() {
                         <Cell key={i} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={tooltipStyle} />
+                    <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipItemStyle} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -190,7 +193,7 @@ export default function AnalyticsView() {
 
       <div className="panel" style={{ marginBottom: 'var(--sp-4)' }}>
         <div className="panel-title">
-          <CalendarDays size={15} color="var(--gold-text)" /> Activity — last 13 weeks
+          <CalendarDays size={15} color="var(--gold-text)" /> Activity over the last 13 weeks
         </div>
         <Heatmap data={data.hm} />
       </div>

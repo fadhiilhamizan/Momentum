@@ -401,6 +401,13 @@ textarea {
   display: grid;
   place-items: center;
   flex-shrink: 0;
+  border-radius: var(--radius-btn);
+  padding: 2px;
+  transition: transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.task-input-row .plus:hover {
+  background: var(--gold-soft);
+  transform: scale(1.08);
 }
 .task-input input.title {
   flex: 1;
@@ -411,6 +418,18 @@ textarea {
   color: var(--text-1);
 }
 .task-input input.title::placeholder {
+  color: var(--text-3);
+}
+.task-required {
+  color: var(--priority-critical);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.task-input-optnote {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-tiny);
   color: var(--text-3);
 }
 .task-input-options {

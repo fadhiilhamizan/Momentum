@@ -14,10 +14,10 @@ const SHORTCUTS = [
 ];
 
 const TIPS = [
-  'Click a task to open its full details — notes, subtasks, tags, due date and recurrence.',
+  'Click a task to open its full details: notes, subtasks, tags, due date and recurrence.',
   'Use the “I have __ min” bar on Today to get a smart suggestion for what to do next.',
   'Drag the grip handle in All Tasks (Manual sort) to reorder your list.',
-  'Complete something every day to keep your streak — and earn XP toward the next level.',
+  'Complete something every day to keep your streak, and earn XP toward the next level.',
 ];
 
 export default function HelpModal({ onClose }) {

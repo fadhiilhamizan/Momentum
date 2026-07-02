@@ -18,6 +18,7 @@ import { useUserStore } from '../store/userStore';
 import { useUiStore } from '../store/uiStore';
 import { levelFromXp, xpFromCompletions } from '../utils/gamification';
 import { todayKey } from '../utils/dateHelpers';
+import ProgressModal from './ProgressModal';
 
 const NAV = [
   { to: '/today', label: 'Today', icon: Target },
@@ -46,6 +47,8 @@ export default function Sidebar() {
   const lvl = levelFromXp(xp);
 
   const atRisk = streak.lastCompletedDate !== todayKey();
+
+  const [progressOpen, setProgressOpen] = useState(false);
 
   // Trigger the count-pop animation whenever the streak increments.
   const [bumping, setBumping] = useState(false);
@@ -87,25 +90,37 @@ export default function Sidebar() {
 
       <div className="sidebar-footer">
         <div className="status-card">
-          <div className="streak-row">
-            <span className={cn('streak-flame', { 'at-risk': atRisk && streak.currentStreak === 0 })}>
-              <Flame size={20} fill={streak.currentStreak > 0 ? 'currentColor' : 'none'} />
-            </span>
-            <span className={cn('streak-num', { bump: bumping })}>
-              {streak.currentStreak}
-            </span>
-            <span className="streak-caption">
-              day streak
-              {atRisk && streak.currentStreak > 0 && (
-                <>
-                  <br />
-                  complete one to keep it
-                </>
-              )}
-            </span>
-          </div>
+          <button
+            className="status-btn"
+            onClick={() => setProgressOpen(true)}
+            title="View your progress"
+            aria-label="Streak details"
+          >
+            <div className="streak-row">
+              <span className={cn('streak-flame', { 'at-risk': atRisk && streak.currentStreak === 0 })}>
+                <Flame size={20} fill={streak.currentStreak > 0 ? 'currentColor' : 'none'} />
+              </span>
+              <span className={cn('streak-num', { bump: bumping })}>
+                {streak.currentStreak}
+              </span>
+              <span className="streak-caption">
+                day streak
+                {atRisk && streak.currentStreak > 0 && (
+                  <>
+                    <br />
+                    complete one to keep it
+                  </>
+                )}
+              </span>
+            </div>
+          </button>
 
-          <div>
+          <button
+            className="status-btn"
+            onClick={() => setProgressOpen(true)}
+            title="View your progress"
+            aria-label="Level details"
+          >
             <div className="level-meta">
               <span>Lv {lvl.level} · {lvl.title}</span>
               <span>{lvl.toNext} XP to go</span>
@@ -113,13 +128,15 @@ export default function Sidebar() {
             <div className="level-track" style={{ marginTop: 6 }}>
               <div className="level-fill" style={{ width: `${lvl.progress * 100}%` }} />
             </div>
-          </div>
+          </button>
         </div>
 
         <button className="help-btn" onClick={openHelp} title="Help & shortcuts (?)">
           <HelpCircle size={14} /> Help & shortcuts
         </button>
       </div>
+
+      {progressOpen && <ProgressModal onClose={() => setProgressOpen(false)} />}
     </aside>
   );
 }

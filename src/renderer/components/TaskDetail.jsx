@@ -11,15 +11,9 @@ import { useTaskStore } from '../store/taskStore';
 import { useUiStore } from '../store/uiStore';
 import { BEST_TIMES } from '../utils/taskHelpers';
 import { RECURRENCE_OPTIONS } from '../utils/recurrence';
-
-/** Convert an ISO datetime to the yyyy-MM-dd value an <input type=date> wants. */
-function toDateValue(iso) {
-  if (!iso) return '';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '';
-  const off = d.getTimezoneOffset();
-  return new Date(d.getTime() - off * 60000).toISOString().slice(0, 10);
-}
+import {
+  todayKey, toDateInputValue, toTimeInputValue, combineDateAndTime,
+} from '../utils/dateHelpers';
 
 function Field({ label, children }) {
   return (
@@ -95,19 +89,28 @@ export default function TaskDetail() {
             onChange={(projectId) => set({ projectId })}
           />
         </Field>
-        <Field label="Due date">
-          <input
-            type="date"
-            className="date-input"
-            value={toDateValue(task.dueDate)}
-            onChange={(e) =>
-              set({
-                dueDate: e.target.value
-                  ? new Date(e.target.value + 'T00:00:00').toISOString()
-                  : null,
-              })
-            }
-          />
+        <Field label="Due">
+          <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
+            <input
+              type="date"
+              className="date-input"
+              aria-label="Due date"
+              value={toDateInputValue(task.dueDate)}
+              onChange={(e) =>
+                set({ dueDate: combineDateAndTime(e.target.value, toTimeInputValue(task.dueDate)) })
+              }
+            />
+            <input
+              type="time"
+              className="date-input"
+              aria-label="Due time (optional)"
+              value={toTimeInputValue(task.dueDate)}
+              onChange={(e) => {
+                const dateStr = toDateInputValue(task.dueDate) || (e.target.value ? todayKey() : '');
+                set({ dueDate: combineDateAndTime(dateStr, e.target.value) });
+              }}
+            />
+          </div>
         </Field>
       </div>
 

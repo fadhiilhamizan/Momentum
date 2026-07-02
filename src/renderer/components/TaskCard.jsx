@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import cn from 'classnames';
 import {
-  Check, Star, Trash2, Clock, Calendar, Zap, Timer, Repeat, Hash, CheckSquare,
+  Check, Star, Trash2, Clock, Calendar, Zap, Timer, Repeat, Hash, CheckSquare, FolderPlus,
 } from 'lucide-react';
 import { useTaskStore } from '../store/taskStore';
 import { useUserStore } from '../store/userStore';
@@ -9,7 +9,7 @@ import { useUiStore } from '../store/uiStore';
 import { useProjectStore } from '../store/projectStore';
 import { useFocusStore } from '../store/focusStore';
 import { priorityColor, timeLabel } from '../utils/taskHelpers';
-import { dueLabel, dueUrgency, isOverdue } from '../utils/dateHelpers';
+import { dueLabel, dueTime, dueUrgency, isOverdue } from '../utils/dateHelpers';
 import { isStreakMilestone } from '../utils/gamification';
 import { playChime, playFanfare } from '../utils/sound';
 
@@ -22,6 +22,20 @@ export default function TaskCard({ task }) {
 
   const [completing, setCompleting] = useState(false);
   const checkRef = useRef(null);
+
+  // Quick project-assignment dropdown (closes on outside click).
+  const [projectPickerOpen, setProjectPickerOpen] = useState(false);
+  const pickerRef = useRef(null);
+  useEffect(() => {
+    if (!projectPickerOpen) return undefined;
+    const onDown = (e) => {
+      if (pickerRef.current && !pickerRef.current.contains(e.target)) {
+        setProjectPickerOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, [projectPickerOpen]);
 
   const project = projects.find((p) => p.id === task.projectId);
   const overdue = isOverdue(task);
@@ -101,6 +115,7 @@ export default function TaskCard({ task }) {
             <span className={cn('due', urgency)}>
               <Calendar size={11} />
               {dueLabel(task.dueDate)}
+              {dueTime(task.dueDate) ? ` · ${dueTime(task.dueDate)}` : ''}
             </span>
           )}
 
@@ -135,6 +150,43 @@ export default function TaskCard({ task }) {
       </div>
 
       <div className="task-actions">
+        <div className="quick-project" ref={pickerRef}>
+          <button
+            className="icon-btn project-btn-sm"
+            onClick={() => setProjectPickerOpen((v) => !v)}
+            title={project ? `Project: ${project.name}` : 'Assign to a project'}
+            aria-label="Assign to a project"
+            aria-expanded={projectPickerOpen}
+          >
+            <FolderPlus size={15} />
+          </button>
+          {projectPickerOpen && (
+            <div className="project-menu" role="menu">
+              <button
+                className={cn('project-menu-item', { active: !task.projectId })}
+                onClick={() => {
+                  updateTask(task.id, { projectId: null });
+                  setProjectPickerOpen(false);
+                }}
+              >
+                No project
+              </button>
+              {projects.map((p) => (
+                <button
+                  key={p.id}
+                  className={cn('project-menu-item', { active: task.projectId === p.id })}
+                  onClick={() => {
+                    updateTask(task.id, { projectId: p.id });
+                    setProjectPickerOpen(false);
+                  }}
+                >
+                  <span className="dot" style={{ background: p.color }} />
+                  {p.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         {!task.isCompleted && (
           <button
             className="icon-btn focus-btn-sm"

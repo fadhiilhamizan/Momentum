@@ -82,12 +82,21 @@
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-input);
-  padding: 8px 10px;
+  padding: 9px 12px;
+  /* Inherit Inter — otherwise selects and date inputs render in the browser's
+     default (often a serif), which reads inconsistently with the rest of the UI. */
+  font-family: inherit;
   font-size: var(--fs-body-lg);
+  line-height: 1.4;
   color: var(--text-1);
   outline: none;
   transition: border-color var(--dur-fast) var(--ease);
   width: 100%;
+}
+/* Native dropdown list items — style where the platform allows it. */
+.select option {
+  background: var(--surface-1);
+  color: var(--text-1);
 }
 .text-input:focus,
 .textarea:focus,
@@ -1039,5 +1048,138 @@ body.overlay-open .main-pane {
 .cp-empty {
   padding: var(--sp-4);
   text-align: center;
+  color: var(--text-3);
+}
+
+/* ------------------------------------------------------------------ */
+/* Today motivation · quick project assign · sidebar progress popup    */
+/* ------------------------------------------------------------------ */
+
+.today-motivation {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-2) var(--sp-3);
+  border-left: 2px solid var(--gold-text);
+  background: linear-gradient(90deg, var(--gold-soft), transparent 80%);
+  border-radius: var(--radius-btn);
+  color: var(--text-2);
+  font-size: var(--fs-body-lg);
+  font-style: italic;
+  animation: fadeIn var(--dur) var(--ease);
+}
+.today-motivation svg {
+  color: var(--gold-text);
+  flex-shrink: 0;
+}
+
+/* Quick project assignment on task cards */
+.quick-project {
+  position: relative;
+}
+.task-card:hover .project-btn-sm {
+  opacity: 1;
+}
+.project-btn-sm {
+  opacity: 0;
+}
+.project-btn-sm[aria-expanded='true'] {
+  opacity: 1;
+  color: var(--gold-text);
+}
+.project-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 20;
+  min-width: 180px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: var(--sp-1);
+  background: var(--surface-1);
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-md);
+  animation: popIn var(--dur-fast) var(--ease);
+}
+.project-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-btn);
+  color: var(--text-2);
+  font-size: var(--fs-body);
+  text-align: left;
+}
+.project-menu-item:hover {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+.project-menu-item.active {
+  color: var(--gold-text);
+}
+.project-menu-item .dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* Sidebar streak/level become buttons that open the progress popup */
+.status-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border-radius: var(--radius-btn);
+  padding: var(--sp-1);
+  transition: background var(--dur-fast) var(--ease);
+}
+.status-btn:hover {
+  background: var(--surface-3);
+}
+
+/* Progress popup content */
+.progress-section {
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--border);
+}
+.progress-section:first-child {
+  padding-top: 0;
+}
+.progress-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.progress-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-body-lg);
+  font-weight: 600;
+  color: var(--text-1);
+  margin-bottom: var(--sp-3);
+}
+.progress-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-5);
+}
+.progress-stat-value {
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  color: var(--text-1);
+}
+.progress-stat-label {
+  font-size: var(--fs-tiny);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+}
+.progress-note {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-small);
   color: var(--text-3);
 }
