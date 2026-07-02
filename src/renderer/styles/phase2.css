@@ -343,7 +343,7 @@
   inset: 0;
   background: radial-gradient(
     circle at 50% 40%,
-    #17140f 0%,
+    var(--focus-center) 0%,
     var(--bg) 70%
   );
   z-index: 90;
@@ -636,8 +636,9 @@ body.overlay-open .main-pane {
   font-weight: 600;
   color: var(--text-1);
 }
-.reflect-prompt .q .emoji {
-  font-size: 16px;
+.reflect-prompt .q .q-icon {
+  color: var(--gold-text);
+  flex-shrink: 0;
 }
 .mood-row {
   display: flex;
@@ -649,17 +650,19 @@ body.overlay-open .main-pane {
   border-radius: var(--radius-btn);
   background: var(--surface-2);
   border: 1px solid var(--border);
-  font-size: 20px;
+  color: var(--text-2);
   display: grid;
   place-items: center;
   transition: all var(--dur-fast) var(--ease);
 }
 .mood-btn:hover {
   transform: translateY(-2px);
+  color: var(--text-1);
 }
 .mood-btn.selected {
   border-color: var(--gold-text);
   background: var(--gold-soft);
+  color: var(--gold-text);
 }
 .reflect-history-item {
   padding: var(--sp-3) 0;
@@ -673,6 +676,23 @@ body.overlay-open .main-pane {
   color: var(--gold-text);
   font-weight: 600;
   margin-bottom: var(--sp-1);
+}
+.reflect-mood {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: var(--sp-2);
+  color: var(--gold-text);
+}
+.reflect-line {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  margin-bottom: 2px;
+}
+.reflect-line svg {
+  color: var(--gold-text);
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 /* ------------------------------------------------------------------ */

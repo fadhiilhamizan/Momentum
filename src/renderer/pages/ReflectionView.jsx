@@ -1,18 +1,37 @@
 import { useEffect, useState } from 'react';
 import { format, parseISO } from 'date-fns';
-import { Check, NotebookPen } from 'lucide-react';
+import { Check, NotebookPen, Trophy, Lightbulb, Target, Frown, Meh, Smile, Laugh, Flame } from 'lucide-react';
 import api from '../utils/api';
 import { useUiStore } from '../store/uiStore';
 import { todayKey, fullDate } from '../utils/dateHelpers';
 import EmptyState from '../components/EmptyState';
 
 const PROMPTS = [
-  { key: 'wins', emoji: '🏆', label: 'A win from today', placeholder: 'What went well?' },
-  { key: 'learnings', emoji: '💡', label: 'Something you learned', placeholder: 'An insight or lesson…' },
-  { key: 'tomorrow', emoji: '🎯', label: 'Focus for tomorrow', placeholder: 'What matters most next?' },
+  { key: 'wins', Icon: Trophy, label: 'A win from today', placeholder: 'What went well?' },
+  { key: 'learnings', Icon: Lightbulb, label: 'Something you learned', placeholder: 'An insight or lesson…' },
+  { key: 'tomorrow', Icon: Target, label: 'Focus for tomorrow', placeholder: 'What matters most next?' },
 ];
 
-const MOODS = ['😔', '😐', '🙂', '😄', '🔥'];
+// Mood scale — stored as a stable key so it renders as an icon everywhere.
+const MOODS = [
+  { key: 'rough', Icon: Frown, label: 'Rough' },
+  { key: 'meh', Icon: Meh, label: 'Meh' },
+  { key: 'okay', Icon: Smile, label: 'Okay' },
+  { key: 'good', Icon: Laugh, label: 'Good' },
+  { key: 'great', Icon: Flame, label: 'On fire' },
+];
+
+// Map any legacy emoji-based moods to the new keys so old entries still render.
+const LEGACY_MOOD = { '😔': 'rough', '😐': 'meh', '🙂': 'okay', '😄': 'good', '🔥': 'great' };
+
+/** Render the icon for a stored mood value (new key or legacy emoji). */
+function MoodIcon({ value, size = 16 }) {
+  if (!value) return null;
+  const mood = MOODS.find((m) => m.key === (LEGACY_MOOD[value] || value));
+  if (!mood) return null;
+  const Icon = mood.Icon;
+  return <Icon size={size} />;
+}
 
 export default function ReflectionView() {
   const showToast = useUiStore((s) => s.showToast);
@@ -29,7 +48,7 @@ export default function ReflectionView() {
           wins: r.wins || '',
           learnings: r.learnings || '',
           tomorrow: r.tomorrow || '',
-          mood: r.mood || null,
+          mood: r.mood ? LEGACY_MOOD[r.mood] || r.mood : null,
         });
       }
     });
@@ -56,7 +75,7 @@ export default function ReflectionView() {
         {PROMPTS.map((p) => (
           <div className="reflect-prompt" key={p.key}>
             <div className="q">
-              <span className="emoji">{p.emoji}</span> {p.label}
+              <p.Icon size={16} className="q-icon" /> {p.label}
             </div>
             <textarea
               className="textarea"
@@ -72,11 +91,13 @@ export default function ReflectionView() {
           <div className="mood-row">
             {MOODS.map((m) => (
               <button
-                key={m}
-                className={`mood-btn${entry.mood === m ? ' selected' : ''}`}
-                onClick={() => set('mood', entry.mood === m ? null : m)}
+                key={m.key}
+                className={`mood-btn${entry.mood === m.key ? ' selected' : ''}`}
+                onClick={() => set('mood', entry.mood === m.key ? null : m.key)}
+                title={m.label}
+                aria-label={m.label}
               >
-                {m}
+                <m.Icon size={20} />
               </button>
             ))}
           </div>
@@ -98,12 +119,17 @@ export default function ReflectionView() {
             <div className="reflect-history-item" key={r.id || r.date}>
               <div className="reflect-date">
                 {r.date === today ? 'Today · ' : ''}
-                {format(parseISO(r.date), 'EEEE, MMM d')} {r.mood || ''}
+                {format(parseISO(r.date), 'EEEE, MMM d')}
+                {r.mood && (
+                  <span className="reflect-mood">
+                    <MoodIcon value={r.mood} size={14} />
+                  </span>
+                )}
               </div>
               <div style={{ color: 'var(--text-2)', fontSize: 'var(--fs-body)', lineHeight: 1.5 }}>
-                {r.wins && <div>🏆 {r.wins}</div>}
-                {r.learnings && <div>💡 {r.learnings}</div>}
-                {r.tomorrow && <div>🎯 {r.tomorrow}</div>}
+                {r.wins && <div className="reflect-line"><Trophy size={13} /> <span>{r.wins}</span></div>}
+                {r.learnings && <div className="reflect-line"><Lightbulb size={13} /> <span>{r.learnings}</span></div>}
+                {r.tomorrow && <div className="reflect-line"><Target size={13} /> <span>{r.tomorrow}</span></div>}
               </div>
             </div>
           ))

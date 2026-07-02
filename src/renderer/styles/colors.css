@@ -11,6 +11,9 @@
   --surface-1: #1a1815;
   --surface-2: #252220;
   --surface-3: #2f2b27;
+  /* Radial center behind the focus timer — a dark spotlight on the dark theme.
+     Overridden to a light tint in the light theme so the timer text stays readable. */
+  --focus-center: #17140f;
 
   /* Gold accent */
   --gold: #d4af37;
@@ -69,6 +72,7 @@
   --surface-1: #ffffff;
   --surface-2: #f2efe8;
   --surface-3: #e8e3d8;
+  --focus-center: #ffffff;
   --text-1: #1f1c17;
   --text-2: #5c574d;
   --text-3: #7a746a;

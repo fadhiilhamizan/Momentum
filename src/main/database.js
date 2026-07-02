@@ -607,6 +607,25 @@ const analytics = {
   },
 };
 
+/**
+ * Wipe all user content and reset progress — the "Danger Zone" reset.
+ * Removes tasks, projects, reflections and completion history, and zeroes the
+ * streak. Preferences (electron-store settings) are intentionally left intact.
+ */
+function clearAll() {
+  run('DELETE FROM completionHistory');
+  run('DELETE FROM tasks');
+  run('DELETE FROM projects');
+  run('DELETE FROM reflections');
+  run(
+    `UPDATE streaks SET currentStreak = 0, longestStreak = 0,
+      lastCompletedDate = NULL, startDate = NULL WHERE id = $id`,
+    { $id: STREAK_ID }
+  );
+  persistNow();
+  return { ok: true };
+}
+
 /** Merge an exported backup back in (idempotent by id / reflection date). */
 function importData(payload = {}) {
   const now = new Date().toISOString();
@@ -687,4 +706,5 @@ module.exports = {
   reflections,
   analytics,
   importData,
+  clearAll,
 };

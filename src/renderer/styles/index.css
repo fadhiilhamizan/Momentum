@@ -422,6 +422,25 @@ textarea {
   padding-top: var(--sp-3);
   border-top: 1px solid var(--border);
 }
+.task-input-advanced {
+  margin-top: var(--sp-1);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--border);
+}
+.task-adv-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-tiny);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+  padding: var(--sp-1) 0;
+  transition: color var(--dur-fast) var(--ease);
+}
+.task-adv-toggle:hover {
+  color: var(--gold-text);
+}
 .input-hint {
   margin-left: auto;
   font-size: var(--fs-tiny);

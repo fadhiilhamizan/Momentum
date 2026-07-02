@@ -120,8 +120,9 @@ function registerIpc() {
   handle('analytics:daily', (days) => db.analytics.dailyCompletions(days));
   handle('analytics:totals', () => db.analytics.totals());
 
-  // Data import
+  // Data import / reset
   handle('data:import', (payload) => db.importData(payload));
+  handle('data:clear', () => db.clearAll());
 
   // Settings (electron-store)
   handle('settings:get', (key, fallback) => settings.get(key, fallback));

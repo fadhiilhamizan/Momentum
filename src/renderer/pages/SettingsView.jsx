@@ -1,5 +1,5 @@
-import { useRef } from 'react';
-import { Moon, Sun, Shield, Database, Volume2, VolumeX, Download, Upload, Bell, BellOff } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Moon, Sun, Shield, Database, Volume2, VolumeX, Download, Upload, Bell, BellOff, Trash2, AlertTriangle } from 'lucide-react';
 import { useUserStore } from '../store/userStore';
 import { useTaskStore } from '../store/taskStore';
 import { useProjectStore } from '../store/projectStore';
@@ -7,20 +7,21 @@ import api, { isElectron } from '../utils/api';
 import { playChime } from '../utils/sound';
 import { todayKey } from '../utils/dateHelpers';
 import { useUiStore } from '../store/uiStore';
+import ConfirmDialog from '../components/ConfirmDialog';
 import { requestPermission, permission, testNotification, supported } from '../utils/notifications';
 
-function Section({ title, children }) {
+function Section({ title, danger = false, children }) {
   return (
     <div
       style={{
         background: 'var(--surface-1)',
-        border: '1px solid var(--border)',
+        border: `1px solid ${danger ? 'var(--priority-critical)' : 'var(--border)'}`,
         borderRadius: 'var(--radius-card)',
         padding: 'var(--sp-5)',
         marginBottom: 'var(--sp-4)',
       }}
     >
-      <div style={{ fontSize: 'var(--fs-h3)', fontWeight: 600, marginBottom: 'var(--sp-3)', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-2)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-2)', fontSize: 'var(--fs-h3)', fontWeight: 600, marginBottom: 'var(--sp-3)', textTransform: 'uppercase', letterSpacing: '0.06em', color: danger ? 'var(--priority-critical)' : 'var(--text-2)' }}>
         {title}
       </div>
       {children}
@@ -47,7 +48,9 @@ export default function SettingsView() {
   const showToast = useUiStore((s) => s.showToast);
   const reloadTasks = useTaskStore((s) => s.load);
   const reloadProjects = useProjectStore((s) => s.load);
+  const reloadStreak = useUserStore((s) => s.loadStreak);
   const fileRef = useRef(null);
+  const [confirmingClear, setConfirmingClear] = useState(false);
 
   const onImportFile = async (e) => {
     const file = e.target.files && e.target.files[0];
@@ -111,6 +114,17 @@ export default function SettingsView() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     showToast('Data exported', 'sparkles');
+  };
+
+  const clearAllData = async () => {
+    try {
+      await api.data.clear();
+      await Promise.all([reloadTasks(), reloadProjects(), reloadStreak()]);
+      showToast('All data deleted', 'sparkles');
+    } catch (err) {
+      console.error('Delete all failed', err);
+      showToast("Couldn't delete your data", 'sparkles');
+    }
   };
 
   return (
@@ -201,10 +215,10 @@ export default function SettingsView() {
           </div>
           <div style={{ display: 'flex', gap: 'var(--sp-2)', flexShrink: 0 }}>
             <button className="btn btn-ghost" onClick={() => fileRef.current && fileRef.current.click()}>
-              <Upload size={15} /> Import
+              <Download size={15} /> Import
             </button>
             <button className="btn btn-ghost" onClick={exportData}>
-              <Download size={15} /> Export
+              <Upload size={15} /> Export
             </button>
           </div>
           <input
@@ -227,6 +241,32 @@ export default function SettingsView() {
           </div>
         </div>
       </Section>
+
+      <Section title={<><AlertTriangle size={14} /> Danger Zone</>} danger>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-4)', flexWrap: 'wrap' }}>
+          <div style={{ color: 'var(--text-2)', fontSize: 'var(--fs-body-lg)', lineHeight: 1.5, flex: 1, minWidth: 220 }}>
+            Permanently delete every task, project and reflection, and reset your streak.
+            This can’t be undone — export a backup first if you might want your data back.
+          </div>
+          <button
+            className="btn btn-ghost"
+            style={{ color: 'var(--priority-critical)', borderColor: 'var(--priority-critical)', flexShrink: 0 }}
+            onClick={() => setConfirmingClear(true)}
+          >
+            <Trash2 size={15} /> Delete all data
+          </button>
+        </div>
+      </Section>
+
+      {confirmingClear && (
+        <ConfirmDialog
+          title="Delete all data?"
+          message="This permanently deletes all of your tasks, projects and reflections, and resets your streak and progress. This action cannot be undone."
+          confirmLabel="Delete everything"
+          onConfirm={clearAllData}
+          onClose={() => setConfirmingClear(false)}
+        />
+      )}
     </div>
   );
 }

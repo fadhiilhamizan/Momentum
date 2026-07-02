@@ -245,6 +245,20 @@ const mock = {
       saveDb(d);
       return counts;
     },
+    async clear() {
+      const d = defaults();
+      d.tasks = [];
+      d.projects = [];
+      d.reflections = [];
+      d.streak = {
+        currentStreak: 0,
+        longestStreak: 0,
+        lastCompletedDate: null,
+        startDate: null,
+      };
+      saveDb(d);
+      return { ok: true };
+    },
   },
   reflections: {
     async getByDate(date) {

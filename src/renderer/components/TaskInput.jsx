@@ -6,12 +6,18 @@ import PrioritySelector from './PrioritySelector';
 import EnergySelector from './EnergySelector';
 import TimeSelector from './TimeSelector';
 import ProjectSelect from './ProjectSelect';
+import TagEditor from './TagEditor';
+import SubtaskEditor from './SubtaskEditor';
+import { BEST_TIMES } from '../utils/taskHelpers';
+import { RECURRENCE_OPTIONS } from '../utils/recurrence';
 
 /**
  * Inline task creator. Type a title and press Enter to add. The options row
- * (priority / energy / time / project / due) is revealed on demand to keep the
- * default state clean. `defaults` seeds new tasks (e.g. project from a project
- * view, or energy from the quick bar).
+ * (priority / energy / time / project / due) is revealed on demand, and an
+ * "Advanced" panel exposes the same deeper fields as the task-detail modal
+ * (notes / best time / repeat / tags / subtasks) so a task can be fully
+ * specified at creation time. `defaults` seeds new tasks (e.g. project from a
+ * project view, or energy from the quick bar).
  */
 const TaskInput = forwardRef(function TaskInput({ defaults = {} }, ref) {
   const addTask = useTaskStore((s) => s.addTask);
@@ -21,11 +27,17 @@ const TaskInput = forwardRef(function TaskInput({ defaults = {} }, ref) {
   const [title, setTitle] = useState('');
   const [focused, setFocused] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [advanced, setAdvanced] = useState(false);
   const [priority, setPriority] = useState(defaults.priority || 'Medium');
   const [energy, setEnergy] = useState(defaults.energyRequired || 'Medium');
   const [time, setTime] = useState(defaults.timeEstimate ?? null);
   const [projectId, setProjectId] = useState(defaults.projectId || null);
   const [dueDate, setDueDate] = useState(defaults.dueDate || null);
+  const [description, setDescription] = useState('');
+  const [bestTime, setBestTime] = useState(defaults.bestTime || 'Anytime');
+  const [recurrencePattern, setRecurrencePattern] = useState('');
+  const [tags, setTags] = useState([]);
+  const [subtasks, setSubtasks] = useState([]);
   const inputRef = useRef(null);
 
   useImperativeHandle(ref, () => ({
@@ -42,9 +54,22 @@ const TaskInput = forwardRef(function TaskInput({ defaults = {} }, ref) {
       timeEstimate: time,
       dueDate,
       projectId,
+      description: description.trim() || null,
+      bestTime,
+      recurrencePattern: recurrencePattern || null,
+      isRecurring: !!recurrencePattern,
+      tags,
+      subtasks,
     });
     // Keep the text if saving failed so the user doesn't lose their input.
-    if (created) setTitle('');
+    // On success, clear the per-task content but keep the classification
+    // settings so several similar tasks can be added in a row.
+    if (created) {
+      setTitle('');
+      setDescription('');
+      setTags([]);
+      setSubtasks([]);
+    }
   };
 
   const onKeyDown = (e) => {
@@ -124,6 +149,65 @@ const TaskInput = forwardRef(function TaskInput({ defaults = {} }, ref) {
               }
             />
           </OptionRow>
+
+          <div className="task-input-advanced">
+            <button
+              type="button"
+              className="task-adv-toggle"
+              aria-expanded={advanced}
+              onClick={() => setAdvanced((v) => !v)}
+            >
+              {advanced ? <ChevronUp size={14} /> : <ChevronDown size={14} />} Advanced
+            </button>
+
+            {advanced && (
+              <div
+                className="animate-in"
+                style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-4)', marginTop: 'var(--sp-3)' }}
+              >
+                <StackedField label="Notes">
+                  <textarea
+                    className="textarea"
+                    placeholder="Add details, context, links…"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
+                </StackedField>
+                <StackedField label="Best time">
+                  <select
+                    className="select"
+                    value={bestTime}
+                    onChange={(e) => setBestTime(e.target.value)}
+                  >
+                    {BEST_TIMES.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </StackedField>
+                <StackedField label="Repeat">
+                  <select
+                    className="select"
+                    value={recurrencePattern}
+                    onChange={(e) => setRecurrencePattern(e.target.value)}
+                  >
+                    {RECURRENCE_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                </StackedField>
+                <StackedField label="Tags">
+                  <TagEditor value={tags} onChange={setTags} />
+                </StackedField>
+                <StackedField label="Subtasks">
+                  <SubtaskEditor value={subtasks} onChange={setSubtasks} />
+                </StackedField>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -136,6 +220,24 @@ function OptionRow({ label, children }) {
       <span
         style={{
           width: 64,
+          fontSize: 'var(--fs-tiny)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.06em',
+          color: 'var(--text-3)',
+        }}
+      >
+        {label}
+      </span>
+      {children}
+    </div>
+  );
+}
+
+function StackedField({ label, children }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
+      <span
+        style={{
           fontSize: 'var(--fs-tiny)',
           textTransform: 'uppercase',
           letterSpacing: '0.06em',
