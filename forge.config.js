@@ -10,8 +10,6 @@ module.exports = {
     executableName: 'momentum',
     asar: true,
     icon: './assets/icon',
-    // sql.js is loaded at runtime (not webpack-bundled), so its JS loader and
-    // .wasm binary are shipped as resources next to the packaged app.
     extraResource: [
       './node_modules/sql.js/dist/sql-wasm.js',
       './node_modules/sql.js/dist/sql-wasm.wasm',
@@ -24,10 +22,6 @@ module.exports = {
       config: {
         name: 'momentum',
         setupIcon: './assets/icon.ico',
-        // Code signing (optional): set these env vars to a Windows code-signing
-        // certificate to sign the installer + app and avoid SmartScreen warnings.
-        // Requires an OV/EV certificate from a CA (self-signed will NOT clear
-        // SmartScreen). See README → Code signing.
         ...(process.env.WINDOWS_CERT_FILE
           ? {
               certificateFile: process.env.WINDOWS_CERT_FILE,
@@ -85,4 +79,18 @@ module.exports = {
       [FuseV1Options.OnlyLoadAppFromAsar]: true,
     }),
   ],
+  // TAMBAHKAN BLOK PUBLISHERS DI BAWAH INI
+  publishers: [
+    {
+      name: '@electron-forge/publisher-github',
+      config: {
+        repository: {
+          owner: 'fadhiilhamizan',
+          name: 'momentum'
+        },
+        prerelease: false,
+        draft: true // Set ke true agar rilis tersimpan sebagai draft terlebih dahulu untuk Anda cek ulang
+      }
+    }
+  ]
 };
