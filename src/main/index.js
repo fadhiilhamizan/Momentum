@@ -29,11 +29,10 @@ let mainWindow = null;
  */
 function setupAutoUpdate() {
   if (!app.isPackaged) return;
-  const repo = process.env.MOMENTUM_UPDATE_REPO;
-  if (!repo) {
-    log('auto-update: no repo configured (set MOMENTUM_UPDATE_REPO), skipping');
-    return;
-  }
+  // Defaults to the project repo so shipped builds self-update out of the box;
+  // override with MOMENTUM_UPDATE_REPO if you fork. Requires a PUBLIC repo with
+  // published GitHub Releases (update.electronjs.org can't read private repos).
+  const repo = process.env.MOMENTUM_UPDATE_REPO || 'fadhiilhamizan/Momentum';
   try {
     const { updateElectronApp } = require('update-electron-app');
     updateElectronApp({

@@ -140,6 +140,7 @@ export default function TaskCard({ task }) {
             className="icon-btn focus-btn-sm"
             onClick={() => startFocus(task)}
             title="Start focus session"
+            aria-label="Start focus session"
           >
             <Timer size={15} />
           </button>
@@ -148,10 +149,16 @@ export default function TaskCard({ task }) {
           className={cn('icon-btn star-btn', { starred: task.isStarred })}
           onClick={() => updateTask(task.id, { isStarred: !task.isStarred })}
           title={task.isStarred ? 'Unstar' : 'Star'}
+          aria-label={task.isStarred ? 'Unstar task' : 'Star task'}
         >
           <Star size={15} fill={task.isStarred ? 'currentColor' : 'none'} />
         </button>
-        <button className="icon-btn" onClick={() => deleteTask(task.id)} title="Delete task">
+        <button
+          className="icon-btn"
+          onClick={() => deleteTask(task.id)}
+          title="Delete task"
+          aria-label="Delete task"
+        >
           <Trash2 size={15} />
         </button>
       </div>

@@ -78,12 +78,32 @@ export const useTaskStore = create((set, get) => ({
 
   deleteTask: async (id) => {
     const prev = get().tasks;
+    const removed = prev.find((t) => t.id === id);
     set({ tasks: prev.filter((t) => t.id !== id) });
     try {
       await api.tasks.remove(id);
+      if (removed) {
+        useUiStore.getState().showToast('Task deleted', 'sparkles', null, {
+          label: 'Undo',
+          onClick: () => get().restoreTask(removed),
+        });
+      }
     } catch (err) {
       set({ tasks: prev }); // rollback
       reportError("Couldn't delete that task", err);
+    }
+  },
+
+  // Re-insert a previously deleted task, preserving all of its fields
+  // (including completion state) via the import path, then reconcile.
+  restoreTask: async (task) => {
+    set((state) => ({ tasks: [...state.tasks, task] }));
+    try {
+      await api.data.import({ tasks: [task] });
+      await get().load();
+    } catch (err) {
+      set((state) => ({ tasks: state.tasks.filter((t) => t.id !== task.id) }));
+      reportError("Couldn't restore that task", err);
     }
   },
 

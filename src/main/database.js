@@ -14,6 +14,7 @@ const fs = require('fs');
 const path = require('path');
 const { app } = require('electron');
 const { v4: uuid } = require('uuid');
+const { nextDueDate } = require('../shared/recurrence');
 
 let SQL = null; // the sql.js module
 let db = null; // the active Database instance
@@ -404,7 +405,7 @@ const tasks = {
           energyRequired: task.energyRequired,
           timeEstimate: task.timeEstimate,
           bestTime: task.bestTime,
-          dueDate: advanceDate(task.dueDate, task.recurrencePattern),
+          dueDate: nextDueDate(task.dueDate, task.recurrencePattern),
           isRecurring: true,
           recurrencePattern: task.recurrencePattern,
           isStarred: task.isStarred,
@@ -416,17 +417,6 @@ const tasks = {
     return this.get(id);
   },
 };
-
-/** Advance an ISO date by a recurrence pattern (base = today when unset). */
-function advanceDate(iso, pattern) {
-  const base = iso ? new Date(iso) : new Date();
-  const d = new Date(base.getTime());
-  if (pattern === 'daily') d.setDate(d.getDate() + 1);
-  else if (pattern === 'weekly') d.setDate(d.getDate() + 7);
-  else if (pattern === 'monthly') d.setMonth(d.getMonth() + 1);
-  else return iso || null;
-  return d.toISOString();
-}
 
 // ---------------------------------------------------------------------------
 // Projects
@@ -692,6 +682,24 @@ function importData(payload = {}) {
     reflections.upsert(r);
     counts.reflections += 1;
   });
+
+  // Restore the streak from the backup. `longestStreak` keeps whichever record
+  // is higher so a restore never lowers a hard-won best.
+  if (payload.streak) {
+    const s = payload.streak;
+    const existing = streaks.get() || {};
+    run(
+      `UPDATE streaks SET currentStreak = $c, longestStreak = $l,
+        lastCompletedDate = $d, startDate = $sd WHERE id = $id`,
+      {
+        $id: STREAK_ID,
+        $c: s.currentStreak || 0,
+        $l: Math.max(s.longestStreak || 0, existing.longestStreak || 0),
+        $d: s.lastCompletedDate || null,
+        $sd: s.startDate || null,
+      }
+    );
+  }
 
   persistNow();
   return counts;

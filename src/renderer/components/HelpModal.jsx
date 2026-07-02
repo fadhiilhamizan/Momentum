@@ -1,6 +1,7 @@
 import Modal from './Modal';
 
 const SHORTCUTS = [
+  ['Ctrl / ⌘ + K', 'Open the command palette'],
   ['Ctrl / ⌘ + N', 'New task (focus the input)'],
   ['Ctrl / ⌘ + T', 'Go to Today'],
   ['Ctrl / ⌘ + Shift + P', 'Go to Projects'],

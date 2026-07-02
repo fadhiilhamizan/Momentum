@@ -109,6 +109,8 @@ const TaskInput = forwardRef(function TaskInput({ defaults = {} }, ref) {
           type="button"
           className="icon-btn"
           title={expanded ? 'Hide options' : 'Show options'}
+          aria-label={expanded ? 'Hide options' : 'Show options'}
+          aria-expanded={expanded}
           onClick={() => setExpanded((v) => !v)}
         >
           {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}

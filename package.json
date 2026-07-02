@@ -6,12 +6,19 @@
   "main": ".webpack/main",
   "author": "Fadhil",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fadhiilhamizan/Momentum.git"
+  },
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "lint": "echo \"No linting configured\"",
-    "publish": "electron-forge publish"
+    "publish": "electron-forge publish",
+    "release:patch": "npm version patch && git push --follow-tags",
+    "release:minor": "npm version minor && git push --follow-tags",
+    "release:major": "npm version major && git push --follow-tags"
   },
   "keywords": [
     "productivity",

@@ -4,7 +4,6 @@ import { Check, NotebookPen, Trophy, Lightbulb, Target, Frown, Meh, Smile, Laugh
 import api from '../utils/api';
 import { useUiStore } from '../store/uiStore';
 import { todayKey, fullDate } from '../utils/dateHelpers';
-import EmptyState from '../components/EmptyState';
 
 const PROMPTS = [
   { key: 'wins', Icon: Trophy, label: 'A win from today', placeholder: 'What went well?' },

@@ -955,3 +955,89 @@ body.overlay-open .main-pane {
   font-weight: 600;
   color: var(--text-1);
 }
+
+/* ------------------------------------------------------------------ */
+/* Command palette (Ctrl/Cmd-K)                                       */
+/* ------------------------------------------------------------------ */
+.palette-overlay {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 12vh;
+}
+.command-palette {
+  width: min(560px, 92vw);
+  background: var(--surface-1);
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  animation: popIn var(--dur) var(--ease);
+}
+.cp-search {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-3);
+}
+.cp-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text-1);
+  font-size: var(--fs-body-lg);
+}
+.cp-esc {
+  font-size: var(--fs-tiny);
+  color: var(--text-3);
+  background: var(--surface-3);
+  border-radius: 3px;
+  padding: 1px 6px;
+}
+.cp-results {
+  max-height: 46vh;
+  overflow-y: auto;
+  padding: var(--sp-2);
+}
+.cp-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-btn);
+  color: var(--text-2);
+  text-align: left;
+}
+.cp-item-icon {
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+.cp-item-label {
+  flex: 1;
+  color: var(--text-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cp-item-hint {
+  font-size: var(--fs-tiny);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+.cp-item.active {
+  background: var(--gold-soft);
+}
+.cp-item.active .cp-item-icon {
+  color: var(--gold-text);
+}
+.cp-empty {
+  padding: var(--sp-4);
+  text-align: center;
+  color: var(--text-3);
+}

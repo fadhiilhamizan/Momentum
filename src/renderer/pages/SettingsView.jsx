@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Moon, Sun, Shield, Database, Volume2, VolumeX, Download, Upload, Bell, BellOff, Trash2, AlertTriangle } from 'lucide-react';
+import { Moon, Sun, Monitor, Shield, Database, Volume2, VolumeX, Download, Upload, Bell, BellOff, Trash2, AlertTriangle } from 'lucide-react';
 import { useUserStore } from '../store/userStore';
 import { useTaskStore } from '../store/taskStore';
 import { useProjectStore } from '../store/projectStore';
@@ -7,8 +7,12 @@ import api, { isElectron } from '../utils/api';
 import { playChime } from '../utils/sound';
 import { todayKey } from '../utils/dateHelpers';
 import { useUiStore } from '../store/uiStore';
+import { applyTheme } from '../utils/theme';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { requestPermission, permission, testNotification, supported } from '../utils/notifications';
+
+const APP_VERSION =
+  (typeof process !== 'undefined' && process.env && process.env.APP_VERSION) || '1.0.0';
 
 function Section({ title, danger = false, children }) {
   return (
@@ -37,7 +41,7 @@ export default function SettingsView() {
 
   const setTheme = (value) => {
     setSetting('theme', value);
-    document.documentElement.setAttribute('data-theme', value);
+    applyTheme(value);
   };
 
   const setSound = (value) => {
@@ -60,7 +64,7 @@ export default function SettingsView() {
       const text = await file.text();
       const payload = JSON.parse(text);
       const counts = await api.data.import(payload);
-      await Promise.all([reloadTasks(), reloadProjects()]);
+      await Promise.all([reloadTasks(), reloadProjects(), reloadStreak()]);
       showToast(
         `Imported ${counts.tasks} tasks · ${counts.projects} projects`,
         'sparkles'
@@ -95,7 +99,7 @@ export default function SettingsView() {
     const streak = await api.streak.get();
     const payload = {
       app: 'Momentum',
-      version: '0.1.0',
+      version: APP_VERSION,
       exportedAt: new Date().toISOString(),
       tasks,
       projects,
@@ -147,6 +151,12 @@ export default function SettingsView() {
             onClick={() => setTheme('light')}
           >
             <Sun size={13} /> Light
+          </button>
+          <button
+            className={`pill${theme === 'system' ? ' selected' : ''}`}
+            onClick={() => setTheme('system')}
+          >
+            <Monitor size={13} /> System
           </button>
         </div>
       </Section>

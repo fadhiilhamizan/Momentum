@@ -15,6 +15,7 @@ import TaskDetail from './components/TaskDetail';
 import FocusTimer from './components/FocusTimer';
 import Welcome from './components/Welcome';
 import HelpModal from './components/HelpModal';
+import CommandPalette from './components/CommandPalette';
 import { useTaskStore } from './store/taskStore';
 import { useProjectStore } from './store/projectStore';
 import { useUserStore } from './store/userStore';
@@ -22,6 +23,7 @@ import { useUiStore } from './store/uiStore';
 import { maybeDailyBriefing } from './utils/notifications';
 import { levelFromXp, xpFromCompletions } from './utils/gamification';
 import { playFanfare } from './utils/sound';
+import { applyTheme } from './utils/theme';
 
 function isTypingTarget(el) {
   if (!el) return false;
@@ -73,7 +75,7 @@ export default function App() {
     // Load settings first so the briefing check sees the notification prefs.
     loadSettings().then(() => {
       const theme = useUserStore.getState().settings.theme || 'dark';
-      document.documentElement.setAttribute('data-theme', theme);
+      applyTheme(theme);
       loadTasks().then(() => {
         maybeDailyBriefing(useTaskStore.getState().tasks);
       });
@@ -94,6 +96,12 @@ export default function App() {
     const onKey = (e) => {
       const mod = e.metaKey || e.ctrlKey;
       const typing = isTypingTarget(document.activeElement);
+
+      if (mod && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        useUiStore.getState().openPalette();
+        return;
+      }
 
       if (mod && e.key.toLowerCase() === 'n') {
         e.preventDefault();
@@ -151,6 +159,7 @@ export default function App() {
       <TaskDetail />
       <FocusTimer />
       <CelebrationLayer />
+      <CommandPalette />
       {helpOpen && <HelpModal onClose={closeHelp} />}
       {settingsLoaded && !onboarded && (
         <Welcome onFinish={() => setSetting('onboarded', true)} />

@@ -1,0 +1,48 @@
+name: Release
+
+# Runs when you push a version tag (e.g. v1.0.1), which the
+# `npm run release:*` scripts create for you. Builds installers for
+# macOS, Linux and Windows and publishes them to a GitHub Release.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch: # allows a manual run from the Actions tab
+
+# Lets the built-in GITHUB_TOKEN create the release (no personal token needed).
+permissions:
+  contents: write
+
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      # Publish sequentially so the three jobs don't race to create the same
+      # release — the first creates it, the others upload their assets to it.
+      max-parallel: 1
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Check out the tagged commit
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # maker-rpm needs rpmbuild; maker-deb needs dpkg/fakeroot.
+      - name: Install Linux packaging tools
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y rpm fakeroot
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and publish to GitHub Releases
+        run: npm run publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

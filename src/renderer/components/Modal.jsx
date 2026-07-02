@@ -24,7 +24,7 @@ export default function Modal({ title, onClose, children, footer }) {
       <div className="modal" role="dialog" aria-modal="true">
         <div className="modal-head">
           <div className="modal-title">{title}</div>
-          <button className="icon-btn" onClick={onClose} title="Close (Esc)">
+          <button className="icon-btn" onClick={onClose} title="Close (Esc)" aria-label="Close">
             <X size={18} />
           </button>
         </div>

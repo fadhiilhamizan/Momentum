@@ -8,6 +8,8 @@
  * the UI fully functional for visual iteration without launching Electron.
  */
 
+import { nextDueDate } from './recurrence';
+
 const hasBridge = typeof window !== 'undefined' && !!window.momentum;
 
 // --------------------------------------------------------------------------
@@ -45,15 +47,6 @@ function uid() {
 }
 function dayKey(iso) {
   return new Date(iso).toISOString().slice(0, 10);
-}
-function advanceDate(iso, pattern) {
-  const base = iso ? new Date(iso) : new Date();
-  const d = new Date(base.getTime());
-  if (pattern === 'daily') d.setDate(d.getDate() + 1);
-  else if (pattern === 'weekly') d.setDate(d.getDate() + 7);
-  else if (pattern === 'monthly') d.setMonth(d.getMonth() + 1);
-  else return iso || null;
-  return d.toISOString();
 }
 
 const mock = {
@@ -147,7 +140,7 @@ const mock = {
             id: uid(),
             isCompleted: false,
             completedDate: null,
-            dueDate: advanceDate(t.dueDate, t.recurrencePattern),
+            dueDate: nextDueDate(t.dueDate, t.recurrencePattern),
             subtasks: (t.subtasks || []).map((st) => ({ ...st, done: false })),
             createdAt: now,
             updatedAt: now,
@@ -242,6 +235,16 @@ const mock = {
         upsert(d.reflections, r, (x) => x.date);
         counts.reflections += 1;
       });
+      if (payload.streak) {
+        d.streak = {
+          ...d.streak,
+          ...payload.streak,
+          longestStreak: Math.max(
+            payload.streak.longestStreak || 0,
+            (d.streak && d.streak.longestStreak) || 0
+          ),
+        };
+      }
       saveDb(d);
       return counts;
     },

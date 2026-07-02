@@ -31,8 +31,9 @@ module.exports = {
       },
     },
     {
+      // Portable, no-install builds for every platform (a .zip of the app).
       name: '@electron-forge/maker-zip',
-      platforms: ['darwin'],
+      platforms: ['darwin', 'win32', 'linux'],
     },
     {
       name: '@electron-forge/maker-deb',
@@ -79,18 +80,21 @@ module.exports = {
       [FuseV1Options.OnlyLoadAppFromAsar]: true,
     }),
   ],
-  // TAMBAHKAN BLOK PUBLISHERS DI BAWAH INI
   publishers: [
     {
       name: '@electron-forge/publisher-github',
       config: {
+        // Must match the real repo (case-sensitive for the release URL).
         repository: {
           owner: 'fadhiilhamizan',
-          name: 'momentum'
+          name: 'Momentum',
         },
         prerelease: false,
-        draft: true // Set ke true agar rilis tersimpan sebagai draft terlebih dahulu untuk Anda cek ulang
-      }
-    }
-  ]
+        // Publish live so the release is downloadable immediately and the
+        // in-app auto-updater can see it. Set to true if you'd rather review a
+        // draft before it goes public (auto-update won't see drafts).
+        draft: false,
+      },
+    },
+  ],
 };

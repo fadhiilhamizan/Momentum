@@ -75,7 +75,7 @@ export default function FocusTimer() {
 
   return (
     <div className="focus-overlay">
-      <button className="icon-btn focus-exit" onClick={close} title="Exit focus">
+      <button className="icon-btn focus-exit" onClick={close} title="Exit focus" aria-label="Exit focus">
         <X size={22} />
       </button>
 
@@ -89,17 +89,18 @@ export default function FocusTimer() {
             <div className="focus-phase">{phase === 'paused' ? 'Paused' : 'Stay with it'}</div>
           </div>
           <div className="focus-controls">
-            <button className="focus-btn" onClick={() => addMinutes(5)} title="Add 5 minutes">
+            <button className="focus-btn" onClick={() => addMinutes(5)} title="Add 5 minutes" aria-label="Add 5 minutes">
               <Plus size={20} />
             </button>
             <button
               className="focus-btn primary"
               onClick={() => (phase === 'running' ? pause() : resume())}
               title={phase === 'running' ? 'Pause' : 'Resume'}
+              aria-label={phase === 'running' ? 'Pause' : 'Resume'}
             >
               {phase === 'running' ? <Pause size={26} /> : <Play size={26} />}
             </button>
-            <button className="focus-btn" onClick={toReview} title="Finish early">
+            <button className="focus-btn" onClick={toReview} title="Finish early" aria-label="Finish early">
               <SkipForward size={20} />
             </button>
           </div>

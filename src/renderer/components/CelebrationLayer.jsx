@@ -17,7 +17,7 @@ const CONFETTI_COLORS = ['#d4af37', '#e8c547', '#7cb342', '#64b5f6', '#ef5350', 
  * bottom toast. Mounted once at the app root.
  */
 export default function CelebrationLayer() {
-  const { celebrateAt, toast, confettiKey } = useUiStore();
+  const { celebrateAt, toast, confettiKey, dismissToast } = useUiStore();
 
   return (
     <>
@@ -71,7 +71,19 @@ export default function CelebrationLayer() {
           ) : (
             <Sparkles size={16} color="var(--gold-text)" />
           )}
-          {toast.message}
+          <span className="toast-message">{toast.message}</span>
+          {toast.action && (
+            <button
+              type="button"
+              className="toast-action"
+              onClick={() => {
+                toast.action.onClick();
+                dismissToast();
+              }}
+            >
+              {toast.action.label}
+            </button>
+          )}
         </div>
       )}
     </>

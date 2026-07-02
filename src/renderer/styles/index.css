@@ -805,6 +805,21 @@ button.pill:hover {
   align-items: center;
   gap: var(--sp-2);
 }
+.toast-action {
+  margin-left: var(--sp-2);
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--gold-text);
+  color: var(--gold-text);
+  font-size: var(--fs-body);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.toast-action:hover {
+  background: var(--gold-text);
+  color: var(--bg);
+}
 
 /* Placeholder view */
 .placeholder {
