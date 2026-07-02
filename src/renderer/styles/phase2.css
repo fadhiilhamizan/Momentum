@@ -848,14 +848,14 @@ body.overlay-open .main-pane {
   flex-shrink: 0;
   color: var(--text-3);
   cursor: grab;
-  opacity: 0;
+  opacity: 0.3;
   transition: opacity var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
 .drag-handle:active {
   cursor: grabbing;
 }
 .sortable-row:hover .drag-handle {
-  opacity: 0.55;
+  opacity: 0.7;
 }
 .drag-handle:hover {
   opacity: 1;

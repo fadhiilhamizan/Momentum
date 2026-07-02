@@ -1,5 +1,8 @@
-import { Moon, Sun, Shield, Database, Volume2, VolumeX, Download, Bell, BellOff } from 'lucide-react';
+import { useRef } from 'react';
+import { Moon, Sun, Shield, Database, Volume2, VolumeX, Download, Upload, Bell, BellOff } from 'lucide-react';
 import { useUserStore } from '../store/userStore';
+import { useTaskStore } from '../store/taskStore';
+import { useProjectStore } from '../store/projectStore';
 import api, { isElectron } from '../utils/api';
 import { playChime } from '../utils/sound';
 import { todayKey } from '../utils/dateHelpers';
@@ -42,6 +45,28 @@ export default function SettingsView() {
   };
 
   const showToast = useUiStore((s) => s.showToast);
+  const reloadTasks = useTaskStore((s) => s.load);
+  const reloadProjects = useProjectStore((s) => s.load);
+  const fileRef = useRef(null);
+
+  const onImportFile = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = ''; // allow re-selecting the same file
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const payload = JSON.parse(text);
+      const counts = await api.data.import(payload);
+      await Promise.all([reloadTasks(), reloadProjects()]);
+      showToast(
+        `Imported ${counts.tasks} tasks · ${counts.projects} projects`,
+        'sparkles'
+      );
+    } catch (err) {
+      console.error('Import failed', err);
+      showToast("That file couldn't be imported", 'sparkles');
+    }
+  };
 
   const setNotifications = async (value) => {
     if (value) {
@@ -172,11 +197,23 @@ export default function SettingsView() {
       <Section title="Data">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-3)' }}>
           <div style={{ color: 'var(--text-2)', fontSize: 'var(--fs-body-lg)', lineHeight: 1.5 }}>
-            Export all your tasks, projects and reflections as a JSON backup.
+            Back up or restore your tasks, projects and reflections as JSON.
           </div>
-          <button className="btn btn-ghost" onClick={exportData} style={{ flexShrink: 0 }}>
-            <Download size={15} /> Export JSON
-          </button>
+          <div style={{ display: 'flex', gap: 'var(--sp-2)', flexShrink: 0 }}>
+            <button className="btn btn-ghost" onClick={() => fileRef.current && fileRef.current.click()}>
+              <Upload size={15} /> Import
+            </button>
+            <button className="btn btn-ghost" onClick={exportData}>
+              <Download size={15} /> Export
+            </button>
+          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/json,.json"
+            style={{ display: 'none' }}
+            onChange={onImportFile}
+          />
         </div>
       </Section>
 

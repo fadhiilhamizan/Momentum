@@ -35,7 +35,7 @@ const TaskInput = forwardRef(function TaskInput({ defaults = {} }, ref) {
   const submit = async () => {
     const trimmed = title.trim();
     if (!trimmed) return;
-    await addTask({
+    const created = await addTask({
       title: trimmed,
       priority,
       energyRequired: energy,
@@ -43,7 +43,8 @@ const TaskInput = forwardRef(function TaskInput({ defaults = {} }, ref) {
       dueDate,
       projectId,
     });
-    setTitle('');
+    // Keep the text if saving failed so the user doesn't lose their input.
+    if (created) setTitle('');
   };
 
   const onKeyDown = (e) => {

@@ -10,8 +10,12 @@ module.exports = {
     executableName: 'momentum',
     asar: true,
     icon: './assets/icon',
-    // sql.js ships a .wasm binary that must remain readable on disk at runtime.
-    extraResource: ['./node_modules/sql.js/dist/sql-wasm.wasm'],
+    // sql.js is loaded at runtime (not webpack-bundled), so its JS loader and
+    // .wasm binary are shipped as resources next to the packaged app.
+    extraResource: [
+      './node_modules/sql.js/dist/sql-wasm.js',
+      './node_modules/sql.js/dist/sql-wasm.wasm',
+    ],
   },
   rebuildConfig: {},
   makers: [
@@ -20,6 +24,16 @@ module.exports = {
       config: {
         name: 'momentum',
         setupIcon: './assets/icon.ico',
+        // Code signing (optional): set these env vars to a Windows code-signing
+        // certificate to sign the installer + app and avoid SmartScreen warnings.
+        // Requires an OV/EV certificate from a CA (self-signed will NOT clear
+        // SmartScreen). See README → Code signing.
+        ...(process.env.WINDOWS_CERT_FILE
+          ? {
+              certificateFile: process.env.WINDOWS_CERT_FILE,
+              certificatePassword: process.env.WINDOWS_CERT_PASSWORD,
+            }
+          : {}),
       },
     },
     {

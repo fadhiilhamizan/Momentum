@@ -20,6 +20,39 @@ let db = null; // the active Database instance
 let dbPath = null;
 let persistTimer = null;
 
+/**
+ * Load the sql.js module. It is intentionally NOT webpack-bundled (emscripten
+ * glue does not survive bundling well), so we require it dynamically: from the
+ * packaged resources when installed, or from node_modules in development.
+ * `eval('require')` bypasses webpack's static resolution.
+ */
+function loadSqlJs() {
+  const nodeRequire = eval('require');
+  const candidates = [];
+  if (app.isPackaged && process.resourcesPath) {
+    candidates.push(path.join(process.resourcesPath, 'sql-wasm.js'));
+  }
+  candidates.push('sql.js');
+  candidates.push(
+    path.join(__dirname, '..', '..', 'node_modules', 'sql.js', 'dist', 'sql-wasm.js')
+  );
+  let lastErr;
+  for (const candidate of candidates) {
+    try {
+      const mod = nodeRequire(candidate);
+      try {
+        require('./logger').log('sql.js loaded from', candidate);
+      } catch (_) {
+        /* logger optional */
+      }
+      return mod;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  throw lastErr || new Error('Could not load sql.js');
+}
+
 /** Resolve the sql-wasm.wasm binary location for dev and packaged builds. */
 function resolveWasmBinary() {
   const candidates = [];
@@ -48,6 +81,11 @@ function resolveWasmBinary() {
 
   for (const candidate of candidates) {
     if (candidate && fs.existsSync(candidate)) {
+      try {
+        require('./logger').log('wasm resolved from', candidate);
+      } catch (_) {
+        /* logger optional */
+      }
       return fs.readFileSync(candidate);
     }
   }
@@ -125,7 +163,7 @@ CREATE INDEX IF NOT EXISTS idx_history_task ON completionHistory(taskId);
 /** Initialize the database engine and load (or create) the on-disk file. */
 async function init() {
   if (db) return;
-  const initSqlJs = require('sql.js');
+  const initSqlJs = loadSqlJs();
   SQL = await initSqlJs({ wasmBinary: resolveWasmBinary() });
 
   dbPath = path.join(app.getPath('userData'), 'momentum.sqlite');
@@ -569,6 +607,77 @@ const analytics = {
   },
 };
 
+/** Merge an exported backup back in (idempotent by id / reflection date). */
+function importData(payload = {}) {
+  const now = new Date().toISOString();
+  const counts = { projects: 0, tasks: 0, reflections: 0 };
+
+  (payload.projects || []).forEach((p) => {
+    if (!p || !p.id) return;
+    run(
+      `INSERT OR REPLACE INTO projects (id, name, description, color, isFavorite, isArchived, createdAt, updatedAt)
+       VALUES ($id, $name, $description, $color, $fav, $arch, $createdAt, $updatedAt)`,
+      {
+        $id: p.id,
+        $name: p.name || 'Project',
+        $description: p.description || null,
+        $color: p.color || '#d4af37',
+        $fav: p.isFavorite ? 1 : 0,
+        $arch: p.isArchived ? 1 : 0,
+        $createdAt: p.createdAt || now,
+        $updatedAt: p.updatedAt || now,
+      }
+    );
+    counts.projects += 1;
+  });
+
+  (payload.tasks || []).forEach((t) => {
+    if (!t || !t.id) return;
+    run(
+      `INSERT OR REPLACE INTO tasks (
+        id, title, description, projectId, priority, energyRequired, timeEstimate,
+        bestTime, dueDate, completedDate, isCompleted, isRecurring, recurrencePattern,
+        isStarred, tags, subtasks, sortOrder, createdAt, updatedAt
+      ) VALUES (
+        $id, $title, $description, $projectId, $priority, $energyRequired, $timeEstimate,
+        $bestTime, $dueDate, $completedDate, $isCompleted, $isRecurring, $recurrencePattern,
+        $isStarred, $tags, $subtasks, $sortOrder, $createdAt, $updatedAt
+      )`,
+      {
+        $id: t.id,
+        $title: t.title || 'Untitled task',
+        $description: t.description || null,
+        $projectId: t.projectId || null,
+        $priority: t.priority || 'Medium',
+        $energyRequired: t.energyRequired || 'Medium',
+        $timeEstimate: t.timeEstimate ?? null,
+        $bestTime: t.bestTime || 'Anytime',
+        $dueDate: t.dueDate || null,
+        $completedDate: t.completedDate || null,
+        $isCompleted: t.isCompleted ? 1 : 0,
+        $isRecurring: t.isRecurring ? 1 : 0,
+        $recurrencePattern: t.recurrencePattern || null,
+        $isStarred: t.isStarred ? 1 : 0,
+        $tags: JSON.stringify(t.tags || []),
+        $subtasks: JSON.stringify(t.subtasks || []),
+        $sortOrder: t.sortOrder ?? 0,
+        $createdAt: t.createdAt || now,
+        $updatedAt: t.updatedAt || now,
+      }
+    );
+    counts.tasks += 1;
+  });
+
+  (payload.reflections || []).forEach((r) => {
+    if (!r || !r.date) return;
+    reflections.upsert(r);
+    counts.reflections += 1;
+  });
+
+  persistNow();
+  return counts;
+}
+
 module.exports = {
   init,
   persistNow,
@@ -577,4 +686,5 @@ module.exports = {
   streaks,
   reflections,
   analytics,
+  importData,
 };

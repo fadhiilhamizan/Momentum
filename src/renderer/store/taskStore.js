@@ -1,5 +1,15 @@
 import { create } from 'zustand';
 import api from '../utils/api';
+import { useUiStore } from './uiStore';
+
+function reportError(message, err) {
+  console.error(message, err);
+  try {
+    useUiStore.getState().showToast(message, 'sparkles');
+  } catch (_) {
+    /* ui store not ready */
+  }
+}
 
 export const useTaskStore = create((set, get) => ({
   tasks: [],
@@ -18,26 +28,39 @@ export const useTaskStore = create((set, get) => ({
   },
 
   addTask: async (input) => {
-    const task = await api.tasks.create(input);
-    set((state) => ({ tasks: [...state.tasks, task] }));
-    return task;
+    try {
+      const task = await api.tasks.create(input);
+      set((state) => ({ tasks: [...state.tasks, task] }));
+      return task;
+    } catch (err) {
+      reportError("Couldn't save that task", err);
+      return null;
+    }
   },
 
   updateTask: async (id, updates) => {
+    const prev = get().tasks;
     // Optimistic update, then reconcile with the persisted row.
     set((state) => ({
       tasks: state.tasks.map((t) => (t.id === id ? { ...t, ...updates } : t)),
     }));
-    const saved = await api.tasks.update(id, updates);
-    if (saved) {
-      set((state) => ({
-        tasks: state.tasks.map((t) => (t.id === id ? saved : t)),
-      }));
+    try {
+      const saved = await api.tasks.update(id, updates);
+      if (saved) {
+        set((state) => ({
+          tasks: state.tasks.map((t) => (t.id === id ? saved : t)),
+        }));
+      }
+      return saved;
+    } catch (err) {
+      set({ tasks: prev }); // rollback
+      reportError("Couldn't update that task", err);
+      return null;
     }
-    return saved;
   },
 
   reorderTasks: async (orderedIds) => {
+    const prev = get().tasks;
     // Optimistically stamp each task's sortOrder to its new position.
     const orderMap = Object.fromEntries(orderedIds.map((id, i) => [id, i]));
     set((state) => ({
@@ -45,7 +68,12 @@ export const useTaskStore = create((set, get) => ({
         t.id in orderMap ? { ...t, sortOrder: orderMap[t.id] } : t
       ),
     }));
-    await api.tasks.reorder(orderedIds);
+    try {
+      await api.tasks.reorder(orderedIds);
+    } catch (err) {
+      set({ tasks: prev });
+      reportError("Couldn't reorder tasks", err);
+    }
   },
 
   deleteTask: async (id) => {
@@ -55,11 +83,12 @@ export const useTaskStore = create((set, get) => ({
       await api.tasks.remove(id);
     } catch (err) {
       set({ tasks: prev }); // rollback
-      throw err;
+      reportError("Couldn't delete that task", err);
     }
   },
 
   toggleComplete: async (id, isCompleted) => {
+    const prev = get().tasks;
     set((state) => ({
       tasks: state.tasks.map((t) =>
         t.id === id
@@ -71,18 +100,24 @@ export const useTaskStore = create((set, get) => ({
           : t
       ),
     }));
-    const saved = await api.tasks.setCompleted(id, isCompleted);
-    if (saved) {
-      set((state) => ({
-        tasks: state.tasks.map((t) => (t.id === id ? saved : t)),
-      }));
-      // Completing a recurring task spawns its next occurrence in the data
-      // layer; reload so the new task shows up in the store immediately.
-      if (isCompleted && saved.isRecurring) {
-        await get().load();
+    try {
+      const saved = await api.tasks.setCompleted(id, isCompleted);
+      if (saved) {
+        set((state) => ({
+          tasks: state.tasks.map((t) => (t.id === id ? saved : t)),
+        }));
+        // Completing a recurring task spawns its next occurrence in the data
+        // layer; reload so the new task shows up in the store immediately.
+        if (isCompleted && saved.isRecurring) {
+          await get().load();
+        }
       }
+      return saved;
+    } catch (err) {
+      set({ tasks: prev }); // rollback
+      reportError("Couldn't update that task", err);
+      return null;
     }
-    return saved;
   },
 
   // Selectors ---------------------------------------------------------------

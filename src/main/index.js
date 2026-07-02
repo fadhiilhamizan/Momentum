@@ -2,6 +2,10 @@ const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 const path = require('path');
 const Store = require('electron-store');
 const db = require('./database');
+const { log } = require('./logger');
+
+process.on('uncaughtException', (e) => log('uncaughtException', e));
+process.on('unhandledRejection', (e) => log('unhandledRejection', e));
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -17,6 +21,31 @@ const PRELOAD = MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY;
 const settings = new Store({ name: 'momentum-settings' });
 
 let mainWindow = null;
+
+/**
+ * Enable auto-updates via update.electronjs.org (free, no server to run) once a
+ * public GitHub repo with published Releases is configured. Set the repo via the
+ * MOMENTUM_UPDATE_REPO env var ("owner/name"). No-ops in dev or when unset.
+ */
+function setupAutoUpdate() {
+  if (!app.isPackaged) return;
+  const repo = process.env.MOMENTUM_UPDATE_REPO;
+  if (!repo) {
+    log('auto-update: no repo configured (set MOMENTUM_UPDATE_REPO), skipping');
+    return;
+  }
+  try {
+    const { updateElectronApp } = require('update-electron-app');
+    updateElectronApp({
+      repo,
+      updateInterval: '1 hour',
+      logger: { log, info: log, warn: log, error: log },
+    });
+    log('auto-update: enabled for', repo);
+  } catch (err) {
+    log('auto-update setup failed', err);
+  }
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -91,6 +120,9 @@ function registerIpc() {
   handle('analytics:daily', (days) => db.analytics.dailyCompletions(days));
   handle('analytics:totals', () => db.analytics.totals());
 
+  // Data import
+  handle('data:import', (payload) => db.importData(payload));
+
   // Settings (electron-store)
   handle('settings:get', (key, fallback) => settings.get(key, fallback));
   handle('settings:set', (key, value) => {
@@ -101,14 +133,19 @@ function registerIpc() {
 }
 
 app.whenReady().then(async () => {
+  log('app ready; isPackaged=', app.isPackaged, 'resourcesPath=', process.resourcesPath);
   try {
     await db.init();
+    log('db.init OK');
   } catch (err) {
-    console.error('[db] initialization failed:', err);
+    log('db.init FAILED', err);
   }
   registerIpc();
+  log('IPC registered');
+
   Menu.setApplicationMenu(null);
   createWindow();
+  setupAutoUpdate();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

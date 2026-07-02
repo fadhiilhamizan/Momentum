@@ -218,6 +218,34 @@ const mock = {
       return defaults().settings;
     },
   },
+  data: {
+    async import(payload = {}) {
+      const d = defaults();
+      const counts = { projects: 0, tasks: 0, reflections: 0 };
+      const upsert = (arr, item, keyFn) => {
+        const i = arr.findIndex((x) => keyFn(x) === keyFn(item));
+        if (i === -1) arr.push(item);
+        else arr[i] = { ...arr[i], ...item };
+      };
+      (payload.projects || []).forEach((p) => {
+        if (!p || !p.id) return;
+        upsert(d.projects, p, (x) => x.id);
+        counts.projects += 1;
+      });
+      (payload.tasks || []).forEach((t) => {
+        if (!t || !t.id) return;
+        upsert(d.tasks, t, (x) => x.id);
+        counts.tasks += 1;
+      });
+      (payload.reflections || []).forEach((r) => {
+        if (!r || !r.date) return;
+        upsert(d.reflections, r, (x) => x.date);
+        counts.reflections += 1;
+      });
+      saveDb(d);
+      return counts;
+    },
+  },
   reflections: {
     async getByDate(date) {
       return defaults().reflections.find((r) => r.date === date) || null;

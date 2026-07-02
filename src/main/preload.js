@@ -32,6 +32,9 @@ contextBridge.exposeInMainWorld('momentum', {
     daily: (days) => ipcRenderer.invoke('analytics:daily', days),
     totals: () => ipcRenderer.invoke('analytics:totals'),
   },
+  data: {
+    import: (payload) => ipcRenderer.invoke('data:import', payload),
+  },
   settings: {
     get: (key, fallback) => ipcRenderer.invoke('settings:get', key, fallback),
     set: (key, value) => ipcRenderer.invoke('settings:set', key, value),

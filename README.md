@@ -60,13 +60,59 @@ image tooling required):
 node scripts/make-icon.js   # regenerates assets/icon.png + assets/icon.ico
 ```
 
-**Auto-update:** Squirrel packaging is already in place (`electron-squirrel-startup`
-handles install/update shortcuts, and the `.nupkg`/`RELEASES` feed is produced). To
-enable live updates, host `RELEASES` + the `.nupkg` files (e.g. GitHub Releases) and
-point `autoUpdater.setFeedURL(...)` (or add `update-electron-app`) at that feed.
-
 macOS/Linux targets (`maker-zip`, `maker-deb`, `maker-rpm`) are configured and build
 when `make` runs on those platforms.
+
+> **Packaging note:** sql.js is loaded at runtime from packaged resources (not
+> webpack-bundled). Forge's webpack plugin strips `node_modules` from the asar, so
+> any external module must be shipped via `extraResource` and required from
+> `process.resourcesPath`. Always test the `make` output, not just `npm start`.
+
+### Auto-update
+
+The client is wired up with [`update-electron-app`](https://github.com/electron/update-electron-app)
+(free, backed by update.electronjs.org — no server to run). It activates when packaged
+and a public GitHub repo with published Releases is configured:
+
+```bash
+# Point at your repo, then rebuild + publish the out/make artifacts to GitHub Releases
+set MOMENTUM_UPDATE_REPO=your-user/momentum   # Windows (PowerShell: $env:MOMENTUM_UPDATE_REPO=...)
+npm run make
+```
+
+Installed apps then check for updates hourly and apply them via Squirrel. Without the
+env var it no-ops (logged to `%APPDATA%/Momentum/momentum-main.log`).
+
+### Code signing (avoiding SmartScreen)
+
+Signing is env-driven — provide a Windows code-signing certificate and the installer
++ app are signed automatically:
+
+```bash
+set WINDOWS_CERT_FILE=C:\path\to\cert.pfx
+set WINDOWS_CERT_PASSWORD=your-password
+npm run make
+```
+
+- A standard **OV** certificate signs the binaries; SmartScreen's warning clears once
+  the app builds download **reputation**.
+- An **EV** certificate clears SmartScreen immediately (no reputation period).
+- **Self-signed certs do _not_ clear SmartScreen** — they only prove the pipeline works.
+- Certificates come from a CA (DigiCert, Sectigo, SSL.com, etc.); they can't be
+  self-generated for public distribution.
+
+### Assets
+
+- `assets/logo.svg` — full-color badge (source of the app icon)
+- `assets/logo-dark.svg` — gold flame for **dark** backgrounds
+- `assets/logo-light.svg` — dark flame for **light** backgrounds
+- `assets/icon.png` / `assets/icon.ico` — rendered from `logo.svg`
+
+## Backup & restore
+
+Settings → **Data** → **Export** writes a JSON backup of all tasks, projects and
+reflections. **Import** merges a backup back in (idempotent by id / reflection date),
+so it's safe to re-import or move data between machines.
 
 ## Architecture
 
