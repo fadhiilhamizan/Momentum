@@ -123,6 +123,9 @@ function registerIpc() {
   handle('data:import', (payload) => db.importData(payload));
   handle('data:clear', () => db.clearAll());
 
+  // App metadata — the authoritative runtime version (matches the installed build).
+  handle('app:getVersion', () => app.getVersion());
+
   // Settings (electron-store)
   handle('settings:get', (key, fallback) => settings.get(key, fallback));
   handle('settings:set', (key, value) => {

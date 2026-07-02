@@ -1,12 +1,31 @@
+import { useEffect, useState } from 'react';
 import { Flame } from 'lucide-react';
+import api from '../utils/api';
 
-// Injected at build time from package.json (see webpack.renderer.config.js).
-const VERSION =
-  typeof process !== 'undefined' && process.env && process.env.APP_VERSION
-    ? process.env.APP_VERSION
-    : '1.0.0';
+// Build-time fallback: webpack's DefinePlugin replaces this token with the
+// package.json version at compile time (no runtime `process` needed). Used for
+// the browser preview; the real app overrides it with app.getVersion().
+const BUILD_VERSION = process.env.APP_VERSION || null;
 
 export default function AboutView() {
+  // Prefer the running app's real version (Electron's app.getVersion), which
+  // always matches the installed/released build. Falls back to the build-time
+  // value in the browser preview.
+  const [version, setVersion] = useState(BUILD_VERSION);
+
+  useEffect(() => {
+    let alive = true;
+    if (api.app && api.app.getVersion) {
+      api.app
+        .getVersion()
+        .then((v) => alive && v && setVersion(v))
+        .catch(() => {});
+    }
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   return (
     <div className="view">
       <div className="placeholder" style={{ paddingTop: 'var(--sp-10)' }}>
@@ -38,7 +57,7 @@ export default function AboutView() {
             padding: '4px 12px',
           }}
         >
-          Version {VERSION}
+          Version {version || '—'}
         </div>
       </div>
     </div>

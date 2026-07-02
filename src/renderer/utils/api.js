@@ -211,6 +211,13 @@ const mock = {
       return defaults().settings;
     },
   },
+  app: {
+    // No Electron here — report the build-time version that webpack's
+    // DefinePlugin bakes in (replaced at compile time, no runtime `process`).
+    async getVersion() {
+      return process.env.APP_VERSION || '0.0.0';
+    },
+  },
   data: {
     async import(payload = {}) {
       const d = defaults();

@@ -41,4 +41,7 @@ contextBridge.exposeInMainWorld('momentum', {
     set: (key, value) => ipcRenderer.invoke('settings:set', key, value),
     all: () => ipcRenderer.invoke('settings:all'),
   },
+  app: {
+    getVersion: () => ipcRenderer.invoke('app:getVersion'),
+  },
 });
