@@ -8,7 +8,7 @@ import TaskInput from '../components/TaskInput';
 import TaskCard from '../components/TaskCard';
 import EmptyState from '../components/EmptyState';
 import CountUp from '../components/CountUp';
-import { groupByEnergy, suggestForBudget, sortTasks } from '../utils/taskHelpers';
+import { groupByEnergy, suggestForBudget, sortTasks, isBlocked } from '../utils/taskHelpers';
 import { isOverdue, isDueToday, greeting, fullDate } from '../utils/dateHelpers';
 import { getMotivation } from '../utils/motivation';
 
@@ -81,11 +81,12 @@ export default function TodayView() {
 
   // Smart pick: the best next task given the current energy/time selection.
   const pick = useMemo(() => {
-    const active = filtered.filter((t) => !t.isCompleted);
+    // Never suggest a task that's still waiting on another.
+    const active = filtered.filter((t) => !t.isCompleted && !isBlocked(t, tasks));
     if (!active.length) return null;
     const byBudget = suggestForBudget(active, timeBudget || 120);
     return byBudget[0] || sortTasks(active, 'priority')[0];
-  }, [filtered, timeBudget]);
+  }, [filtered, timeBudget, tasks]);
 
   const activeCount = filtered.filter((t) => !t.isCompleted).length;
   const showSuggestion = pick && (filtering || activeCount >= 2);

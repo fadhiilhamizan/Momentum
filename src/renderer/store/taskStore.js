@@ -107,6 +107,69 @@ export const useTaskStore = create((set, get) => ({
     }
   },
 
+  restoreTasks: async (list) => {
+    set((state) => ({ tasks: [...state.tasks, ...list] }));
+    try {
+      await api.data.import({ tasks: list });
+      await get().load();
+    } catch (err) {
+      const ids = new Set(list.map((t) => t.id));
+      set((state) => ({ tasks: state.tasks.filter((t) => !ids.has(t.id)) }));
+      reportError("Couldn't restore those tasks", err);
+    }
+  },
+
+  // Bulk actions -----------------------------------------------------------
+  bulkDelete: async (ids) => {
+    const prev = get().tasks;
+    const removed = prev.filter((t) => ids.includes(t.id));
+    if (!removed.length) return;
+    set({ tasks: prev.filter((t) => !ids.includes(t.id)) });
+    try {
+      await Promise.all(ids.map((id) => api.tasks.remove(id)));
+      useUiStore.getState().showToast(
+        `${removed.length} task${removed.length === 1 ? '' : 's'} deleted`,
+        'sparkles',
+        null,
+        { label: 'Undo', onClick: () => get().restoreTasks(removed) }
+      );
+    } catch (err) {
+      set({ tasks: prev });
+      reportError("Couldn't delete those tasks", err);
+    }
+  },
+
+  bulkUpdate: async (ids, patch) => {
+    const prev = get().tasks;
+    set((state) => ({
+      tasks: state.tasks.map((t) => (ids.includes(t.id) ? { ...t, ...patch } : t)),
+    }));
+    try {
+      await Promise.all(ids.map((id) => api.tasks.update(id, patch)));
+      await get().load();
+    } catch (err) {
+      set({ tasks: prev });
+      reportError("Couldn't update those tasks", err);
+    }
+  },
+
+  bulkComplete: async (ids) => {
+    const prev = get().tasks;
+    const now = new Date().toISOString();
+    set((state) => ({
+      tasks: state.tasks.map((t) =>
+        ids.includes(t.id) ? { ...t, isCompleted: true, completedDate: now } : t
+      ),
+    }));
+    try {
+      await Promise.all(ids.map((id) => api.tasks.setCompleted(id, true)));
+      await get().load();
+    } catch (err) {
+      set({ tasks: prev });
+      reportError("Couldn't complete those tasks", err);
+    }
+  },
+
   toggleComplete: async (id, isCompleted) => {
     const prev = get().tasks;
     set((state) => ({

@@ -75,6 +75,25 @@ export function isBlocked(task, all) {
   return blockingTasks(task, all).length > 0;
 }
 
+/** Does `taskId` depend on `targetId`, directly or transitively? */
+export function dependsOnTransitively(taskId, targetId, byId, seen = new Set()) {
+  if (seen.has(taskId)) return false;
+  seen.add(taskId);
+  const t = byId.get(taskId);
+  if (!t) return false;
+  const deps = t.dependsOn || [];
+  if (deps.includes(targetId)) return true;
+  return deps.some((d) => dependsOnTransitively(d, targetId, byId, seen));
+}
+
+/** Would making `taskId` wait on `candidateId` create a dependency cycle? */
+export function wouldCreateCycle(taskId, candidateId, all) {
+  if (taskId === candidateId) return true;
+  const byId = new Map(all.map((t) => [t.id, t]));
+  // A cycle forms if the candidate already (transitively) depends on this task.
+  return dependsOnTransitively(candidateId, taskId, byId);
+}
+
 export function sortTasks(tasks, by = 'priority') {
   const copy = [...tasks];
   switch (by) {

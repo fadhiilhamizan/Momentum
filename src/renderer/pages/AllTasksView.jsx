@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ListChecks, GripVertical } from 'lucide-react';
+import { ListChecks, GripVertical, CheckSquare, Check, Trash2 } from 'lucide-react';
 import { useTaskStore } from '../store/taskStore';
 import { useProjectStore } from '../store/projectStore';
 import TaskInput from '../components/TaskInput';
@@ -26,12 +26,17 @@ const NO_PROJECT = '__none__';
 export default function AllTasksView() {
   const tasks = useTaskStore((s) => s.tasks);
   const projects = useProjectStore((s) => s.projects);
+  const bulkComplete = useTaskStore((s) => s.bulkComplete);
+  const bulkDelete = useTaskStore((s) => s.bulkDelete);
+  const bulkUpdate = useTaskStore((s) => s.bulkUpdate);
   const [status, setStatus] = useState('active');
   const [sort, setSort] = useState('manual');
   const [priority, setPriority] = useState('all');
   const [energy, setEnergy] = useState('all');
   const [projectId, setProjectId] = useState('all');
   const [tag, setTag] = useState('all');
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
 
   // Every distinct tag currently in use, for the tag filter.
   const allTags = useMemo(() => {
@@ -50,6 +55,18 @@ export default function AllTasksView() {
     setTag('all');
   };
 
+  const toggleSelect = (id) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  const exitSelection = () => {
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+  };
+
   const list = useMemo(() => {
     let l = tasks;
     if (status === 'active') l = l.filter((t) => !t.isCompleted);
@@ -65,7 +82,18 @@ export default function AllTasksView() {
   }, [tasks, status, sort, priority, energy, projectId, tag]);
 
   // Drag-reorder is only meaningful for the unfiltered active manual list.
-  const draggable = sort === 'manual' && status === 'active' && !anyFilter;
+  const draggable = sort === 'manual' && status === 'active' && !anyFilter && !selectionMode;
+
+  const chosenIds = [...selectedIds];
+  const selectAll = () => setSelectedIds(new Set(list.map((t) => t.id)));
+  const runBulk = (fn) => {
+    if (chosenIds.length) fn(chosenIds);
+    exitSelection();
+  };
+  const moveToProject = (val) => {
+    if (val === '') return;
+    runBulk((ids) => bulkUpdate(ids, { projectId: val === NO_PROJECT ? null : val }));
+  };
 
   const selectStyle = { width: 'auto', minWidth: 120, padding: '6px 28px 6px 10px' };
 
@@ -175,9 +203,67 @@ export default function AllTasksView() {
             Clear filters
           </button>
         )}
+        <button
+          className="btn btn-ghost"
+          style={{ marginLeft: 'auto' }}
+          onClick={() => (selectionMode ? exitSelection() : setSelectionMode(true))}
+        >
+          <CheckSquare size={15} /> {selectionMode ? 'Cancel' : 'Select'}
+        </button>
       </div>
 
-      <TaskInput />
+      {selectionMode && (
+        <div className="bulk-bar">
+          <span className="bulk-count">{selectedIds.size} selected</span>
+          <button className="btn btn-ghost" onClick={selectAll}>
+            Select all
+          </button>
+          <button
+            className="btn btn-ghost"
+            onClick={() => setSelectedIds(new Set())}
+            disabled={!selectedIds.size}
+          >
+            Clear
+          </button>
+          <span style={{ flex: 1 }} />
+          <button
+            className="btn btn-ghost"
+            disabled={!selectedIds.size}
+            onClick={() => runBulk(bulkComplete)}
+          >
+            <Check size={15} /> Complete
+          </button>
+          <select
+            className="select"
+            style={{ width: 'auto' }}
+            value=""
+            onChange={(e) => moveToProject(e.target.value)}
+            disabled={!selectedIds.size}
+            aria-label="Move selected to project"
+          >
+            <option value="">Move to project…</option>
+            <option value={NO_PROJECT}>No project</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+          <button
+            className="btn btn-ghost"
+            style={{ color: 'var(--priority-critical)' }}
+            disabled={!selectedIds.size}
+            onClick={() => runBulk(bulkDelete)}
+          >
+            <Trash2 size={15} /> Delete
+          </button>
+          <button className="btn btn-primary" onClick={exitSelection}>
+            Done
+          </button>
+        </div>
+      )}
+
+      {!selectionMode && <TaskInput />}
 
       {draggable && list.length > 1 && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-3)', fontSize: 'var(--fs-tiny)', margin: '0 0 var(--sp-2) 2px' }}>
@@ -190,7 +276,13 @@ export default function AllTasksView() {
         ) : (
           <div className="task-list">
             {list.map((t) => (
-              <TaskCard key={t.id} task={t} />
+              <TaskCard
+                key={t.id}
+                task={t}
+                selectionMode={selectionMode}
+                selected={selectedIds.has(t.id)}
+                onToggleSelect={toggleSelect}
+              />
             ))}
           </div>
         )

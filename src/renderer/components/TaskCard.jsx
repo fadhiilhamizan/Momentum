@@ -8,12 +8,13 @@ import { useUserStore } from '../store/userStore';
 import { useUiStore } from '../store/uiStore';
 import { useProjectStore } from '../store/projectStore';
 import { useFocusStore } from '../store/focusStore';
+import ConfirmDialog from './ConfirmDialog';
 import { priorityColor, timeLabel, blockingTasks } from '../utils/taskHelpers';
 import { dueLabel, dueTime, dueUrgency, isOverdue } from '../utils/dateHelpers';
 import { isStreakMilestone } from '../utils/gamification';
 import { playChime, playFanfare } from '../utils/sound';
 
-export default function TaskCard({ task }) {
+export default function TaskCard({ task, selectionMode = false, selected = false, onToggleSelect }) {
   const { toggleComplete, updateTask, deleteTask } = useTaskStore();
   const allTasks = useTaskStore((s) => s.tasks);
   const refreshStreak = useUserStore((s) => s.refreshStreak);
@@ -22,6 +23,7 @@ export default function TaskCard({ task }) {
   const startFocus = useFocusStore((s) => s.start);
 
   const [completing, setCompleting] = useState(false);
+  const [confirmBlocked, setConfirmBlocked] = useState(false);
   const checkRef = useRef(null);
 
   // Quick project-assignment dropdown (closes on outside click).
@@ -47,24 +49,32 @@ export default function TaskCard({ task }) {
   const blockers = task.isCompleted ? [] : blockingTasks(task, allTasks);
   const blocked = blockers.length > 0;
 
+  const doComplete = () => {
+    const rect = checkRef.current && checkRef.current.getBoundingClientRect();
+    if (rect) celebrate(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    playChime();
+    setCompleting(true);
+    setTimeout(async () => {
+      await toggleComplete(task.id, true);
+      const streak = await refreshStreak();
+      showToast('+10 XP · Nice work', 'sparkles');
+      if (streak && isStreakMilestone(streak.currentStreak)) {
+        showToast(`🔥 ${streak.currentStreak}-day streak!`, 'flame');
+        playFanfare();
+        burstConfetti();
+      }
+      setCompleting(false);
+    }, 260);
+  };
+
   const onToggle = async () => {
-    const next = !task.isCompleted;
-    if (next) {
-      const rect = checkRef.current && checkRef.current.getBoundingClientRect();
-      if (rect) celebrate(rect.left + rect.width / 2, rect.top + rect.height / 2);
-      playChime();
-      setCompleting(true);
-      setTimeout(async () => {
-        await toggleComplete(task.id, true);
-        const streak = await refreshStreak();
-        showToast('+10 XP · Nice work', 'sparkles');
-        if (streak && isStreakMilestone(streak.currentStreak)) {
-          showToast(`🔥 ${streak.currentStreak}-day streak!`, 'flame');
-          playFanfare();
-          burstConfetti();
-        }
-        setCompleting(false);
-      }, 260);
+    if (!task.isCompleted) {
+      // Completing a task that's still waiting on others deserves a heads-up.
+      if (blocked) {
+        setConfirmBlocked(true);
+        return;
+      }
+      doComplete();
     } else {
       await toggleComplete(task.id, false);
     }
@@ -76,23 +86,33 @@ export default function TaskCard({ task }) {
         completed: task.isCompleted,
         completing,
         overdue: overdue && !task.isCompleted,
+        selecting: selectionMode,
+        selected: selectionMode && selected,
       })}
     >
       <button
         ref={checkRef}
-        className={cn('checkbox', { done: task.isCompleted })}
-        onClick={onToggle}
-        title={task.isCompleted ? 'Mark incomplete' : 'Complete task'}
-        aria-label="Toggle complete"
+        className={cn('checkbox', {
+          done: !selectionMode && task.isCompleted,
+          'select-box': selectionMode,
+          checked: selectionMode && selected,
+        })}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (selectionMode) onToggleSelect(task.id);
+          else onToggle();
+        }}
+        title={selectionMode ? 'Select task' : task.isCompleted ? 'Mark incomplete' : 'Complete task'}
+        aria-label={selectionMode ? 'Select task' : 'Toggle complete'}
       >
-        {task.isCompleted && <Check size={13} strokeWidth={3} />}
+        {(selectionMode ? selected : task.isCompleted) && <Check size={13} strokeWidth={3} />}
       </button>
 
       <div
         className="task-body"
-        onClick={() => openTask(task.id)}
+        onClick={() => (selectionMode ? onToggleSelect(task.id) : openTask(task.id))}
         style={{ cursor: 'pointer' }}
-        title="Open details"
+        title={selectionMode ? 'Select task' : 'Open details'}
       >
         <div className="task-title">{task.title}</div>
 
@@ -160,6 +180,7 @@ export default function TaskCard({ task }) {
         </div>
       </div>
 
+      {!selectionMode && (
       <div className="task-actions">
         <div className="quick-project" ref={pickerRef}>
           <button
@@ -225,6 +246,20 @@ export default function TaskCard({ task }) {
           <Trash2 size={15} />
         </button>
       </div>
+      )}
+
+      {confirmBlocked && (
+        <ConfirmDialog
+          title="Complete a blocked task?"
+          message={`This task is still waiting on: ${blockers
+            .map((b) => b.title)
+            .join(', ')}. Complete it anyway?`}
+          confirmLabel="Complete anyway"
+          danger={false}
+          onConfirm={doComplete}
+          onClose={() => setConfirmBlocked(false)}
+        />
+      )}
     </div>
   );
 }

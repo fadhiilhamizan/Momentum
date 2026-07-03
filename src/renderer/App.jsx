@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import CelebrationLayer from './components/CelebrationLayer';
 import TodayView from './pages/TodayView';
@@ -17,6 +17,7 @@ import FocusTimer from './components/FocusTimer';
 import Welcome from './components/Welcome';
 import HelpModal from './components/HelpModal';
 import CommandPalette from './components/CommandPalette';
+import ErrorBoundary from './components/ErrorBoundary';
 import { useTaskStore } from './store/taskStore';
 import { useProjectStore } from './store/projectStore';
 import { useUserStore } from './store/userStore';
@@ -25,6 +26,7 @@ import { maybeDailyBriefing, maybeFireReminders } from './utils/notifications';
 import { levelFromXp, xpFromCompletions } from './utils/gamification';
 import { playFanfare } from './utils/sound';
 import { applyTheme } from './utils/theme';
+import { setTimeFormat } from './utils/dateHelpers';
 
 function isTypingTarget(el) {
   if (!el) return false;
@@ -44,6 +46,7 @@ export default function App() {
   const closeHelp = useUiStore((s) => s.closeHelp);
   const tasks = useTaskStore((s) => s.tasks);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Detect level-ups and celebrate. Armed only after the first load so we
   // don't fire on existing progress at startup.
@@ -75,8 +78,9 @@ export default function App() {
     loadStreak();
     // Load settings first so the briefing check sees the notification prefs.
     loadSettings().then(() => {
-      const theme = useUserStore.getState().settings.theme || 'dark';
-      applyTheme(theme);
+      const s = useUserStore.getState().settings;
+      applyTheme(s.theme || 'dark');
+      setTimeFormat(s.timeFormat || '12h');
       loadTasks().then(() => {
         maybeDailyBriefing(useTaskStore.getState().tasks);
       });
@@ -154,7 +158,8 @@ export default function App() {
       </div>
       <Sidebar />
       <main className="main-pane">
-        <Routes>
+        <ErrorBoundary key={location.pathname}>
+          <Routes>
           <Route path="/" element={<Navigate to="/today" replace />} />
           <Route path="/today" element={<TodayView />} />
           <Route path="/calendar" element={<CalendarView />} />
@@ -167,7 +172,8 @@ export default function App() {
           <Route path="/settings" element={<SettingsView />} />
           <Route path="/about" element={<AboutView />} />
           <Route path="*" element={<Navigate to="/today" replace />} />
-        </Routes>
+          </Routes>
+        </ErrorBoundary>
       </main>
       <TaskDetail />
       <FocusTimer />

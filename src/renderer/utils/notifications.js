@@ -109,7 +109,7 @@ function saveReminded(set) {
  * eligible from the due time up to `windowMs` afterward, so a task whose time
  * passed while the app was closed still surfaces once on next launch.
  */
-export function dueReminders(tasks, nowMs, reminded, windowMs = 6 * 60 * 60 * 1000) {
+export function dueReminders(tasks, nowMs, reminded, leadMs = 0, windowMs = 6 * 60 * 60 * 1000) {
   const out = [];
   for (const t of tasks) {
     if (t.isCompleted || !t.dueDate || !dueTime(t.dueDate)) continue;
@@ -117,19 +117,23 @@ export function dueReminders(tasks, nowMs, reminded, windowMs = 6 * 60 * 60 * 10
     if (Number.isNaN(due)) continue;
     const key = `${t.id}@${due}`;
     if (reminded.has(key)) continue;
-    if (due <= nowMs && nowMs - due <= windowMs) out.push({ task: t, key });
+    // Fire `leadMs` before the due time (0 = at the due time).
+    const trigger = due - leadMs;
+    if (trigger <= nowMs && nowMs - trigger <= windowMs) out.push({ task: t, key });
   }
   return out;
 }
 
-/** Fire a desktop reminder for any timed task that has come due. */
+/** Fire a desktop reminder for any timed task that has come due (or is due soon
+    per the user's lead-time setting). */
 export function maybeFireReminders(tasks) {
   if (!enabled()) return;
   const reminded = loadReminded();
-  const due = dueReminders(tasks, Date.now(), reminded);
+  const lead = (useUserStore.getState().settings.reminderLead || 0) * 60 * 1000;
+  const due = dueReminders(tasks, Date.now(), reminded, lead);
   if (!due.length) return;
   for (const { task, key } of due) {
-    notify('Time to focus', `${task.title} is due (${dueTime(task.dueDate)}).`);
+    notify('Time to focus', `${task.title} is due at ${dueTime(task.dueDate)}.`);
     reminded.add(key);
   }
   saveReminded(reminded);

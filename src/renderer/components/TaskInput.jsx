@@ -13,6 +13,7 @@ import { RECURRENCE_OPTIONS } from '../utils/recurrence';
 import {
   todayKey, toDateInputValue, toTimeInputValue, combineDateAndTime,
 } from '../utils/dateHelpers';
+import { parseTaskInput } from '../utils/nlp';
 
 /**
  * Inline task creator. Type a title and press Enter to add. The options row
@@ -48,20 +49,22 @@ const TaskInput = forwardRef(function TaskInput({ defaults = {} }, ref) {
   }));
 
   const submit = async () => {
-    const trimmed = title.trim();
-    if (!trimmed) return;
+    // Pull #tags, !priority, and a date/time out of the typed title.
+    const parsed = parseTaskInput(title);
+    const finalTitle = parsed.title || title.trim();
+    if (!finalTitle) return;
     const created = await addTask({
-      title: trimmed,
-      priority,
+      title: finalTitle,
+      priority: parsed.priority || priority,
       energyRequired: energy,
       timeEstimate: time,
-      dueDate,
+      dueDate: parsed.dueDate || dueDate,
       projectId,
       description: description.trim() || null,
       bestTime,
       recurrencePattern: recurrencePattern || null,
       isRecurring: !!recurrencePattern,
-      tags,
+      tags: [...new Set([...tags, ...parsed.tags])],
       subtasks,
     });
     // Keep the text if saving failed so the user doesn't lose their input.
@@ -139,8 +142,8 @@ const TaskInput = forwardRef(function TaskInput({ defaults = {} }, ref) {
           style={{ flexDirection: 'column', alignItems: 'stretch', gap: 'var(--sp-3)' }}
         >
           <div className="task-input-optnote">
-            <span className="task-required">*</span> Only a title is required. Everything
-            below is optional.
+            <span className="task-required">*</span> Only a title is required. Tip: type
+            {' '}'tomorrow 3pm #work !high' and it's parsed automatically.
           </div>
           <OptionRow label="Priority">
             <PrioritySelector value={priority} onChange={setPriority} />

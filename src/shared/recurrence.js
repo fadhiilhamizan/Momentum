@@ -10,8 +10,11 @@
 export const RECURRENCE_OPTIONS = [
   { value: '', label: 'None' },
   { value: 'daily', label: 'Daily' },
+  { value: 'weekdays', label: 'Every weekday (Mon-Fri)' },
   { value: 'weekly', label: 'Weekly' },
+  { value: 'biweekly', label: 'Every 2 weeks' },
   { value: 'monthly', label: 'Monthly' },
+  { value: 'monthly-end', label: 'Last day of month' },
 ];
 
 export function recurrenceLabel(pattern) {
@@ -30,11 +33,24 @@ export function nextDueDate(dueDate, pattern) {
     case 'daily':
       d.setDate(d.getDate() + 1);
       break;
+    case 'weekdays':
+      // Next weekday, skipping Saturday/Sunday.
+      d.setDate(d.getDate() + 1);
+      while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);
+      break;
     case 'weekly':
       d.setDate(d.getDate() + 7);
       break;
+    case 'biweekly':
+      d.setDate(d.getDate() + 14);
+      break;
     case 'monthly':
       d.setMonth(d.getMonth() + 1);
+      break;
+    case 'monthly-end':
+      // Day 0 of (month + 2) resolves to the last day of the next month,
+      // preserving the time of day.
+      d.setMonth(d.getMonth() + 2, 0);
       break;
     default:
       return dueDate || null;

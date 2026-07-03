@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Pause, Play, Plus, SkipForward, X, Check } from 'lucide-react';
+import { Pause, Play, Plus, SkipForward, X, Check, Coffee } from 'lucide-react';
 import { useFocusStore } from '../store/focusStore';
 import { useTaskStore } from '../store/taskStore';
 import { useUserStore } from '../store/userStore';
@@ -22,7 +22,8 @@ const DIFFICULTIES = ['Easy', 'Just right', 'Hard'];
  */
 export default function FocusTimer() {
   const {
-    phase, title, taskId, totalSec, remainingSec, tick, pause, resume, addMinutes, toReview, close,
+    phase, title, taskId, totalSec, remainingSec, breakType,
+    tick, pause, resume, addMinutes, toReview, startBreak, restart, close,
   } = useFocusStore();
   const toggleComplete = useTaskStore((s) => s.toggleComplete);
   const refreshStreak = useUserStore((s) => s.refreshStreak);
@@ -30,12 +31,13 @@ export default function FocusTimer() {
   const [difficulty, setDifficulty] = useState(null);
   const intervalRef = useRef(null);
 
-  // One-second ticker while running.
+  // One-second ticker while a focus session or a break is running.
   useEffect(() => {
-    if (phase === 'running') {
+    if (phase === 'running' || phase === 'break') {
       intervalRef.current = setInterval(tick, 1000);
       return () => clearInterval(intervalRef.current);
     }
+    return undefined;
   }, [phase, tick]);
 
   // Reset the review selection whenever a new review starts.
@@ -79,7 +81,7 @@ export default function FocusTimer() {
         <X size={22} />
       </button>
 
-      {phase !== 'review' ? (
+      {(phase === 'running' || phase === 'paused') && (
         <div className="focus-card">
           <div className="focus-eyebrow">Focus session</div>
           <div className="focus-task">{title}</div>
@@ -105,7 +107,39 @@ export default function FocusTimer() {
             </button>
           </div>
         </div>
-      ) : (
+      )}
+
+      {phase === 'break' && (
+        <div className="focus-card">
+          <div className="focus-eyebrow">{breakType === 'long' ? 'Long break' : 'Short break'}</div>
+          <div className="focus-task">Rest and recharge</div>
+          <div className="focus-ring-wrap">
+            <ProgressRing value={progress} size={260} stroke={8} />
+            <div className="focus-time">{fmt(remainingSec)}</div>
+            <div className="focus-phase">Breathe</div>
+          </div>
+          <button className="btn btn-ghost" onClick={() => restart()}>
+            <SkipForward size={15} /> Skip break
+          </button>
+        </div>
+      )}
+
+      {phase === 'breakDone' && (
+        <div className="focus-card focus-review">
+          <div className="focus-eyebrow">Break over</div>
+          <div className="focus-task">Ready for another session?</div>
+          <div style={{ display: 'flex', gap: 'var(--sp-3)', marginTop: 'var(--sp-2)' }}>
+            <button className="btn btn-primary" onClick={() => restart()}>
+              <Play size={15} /> Start focus
+            </button>
+            <button className="btn btn-ghost" onClick={close}>
+              Done
+            </button>
+          </div>
+        </div>
+      )}
+
+      {phase === 'review' && (
         <div className="focus-card focus-review">
           <div className="focus-eyebrow">Session complete</div>
           <div className="focus-task">How did “{title}” go?</div>
@@ -120,9 +154,12 @@ export default function FocusTimer() {
               </button>
             ))}
           </div>
-          <div style={{ display: 'flex', gap: 'var(--sp-3)', marginTop: 'var(--sp-2)' }}>
+          <div style={{ display: 'flex', gap: 'var(--sp-3)', marginTop: 'var(--sp-2)', flexWrap: 'wrap', justifyContent: 'center' }}>
             <button className="btn btn-ghost" onClick={() => addMinutes(25)}>
               <Play size={15} /> Keep working
+            </button>
+            <button className="btn btn-ghost" onClick={startBreak}>
+              <Coffee size={15} /> Take a break
             </button>
             <button className="btn btn-primary" onClick={completeTask}>
               <Check size={15} /> Complete task

@@ -1,11 +1,11 @@
 import { useRef, useState } from 'react';
-import { Moon, Sun, Monitor, Shield, Database, Volume2, VolumeX, Download, Upload, Bell, BellOff, Trash2, AlertTriangle } from 'lucide-react';
+import { Moon, Sun, Monitor, Shield, Database, Volume2, VolumeX, Download, Upload, Bell, BellOff, Trash2, AlertTriangle, CalendarDays, Clock } from 'lucide-react';
 import { useUserStore } from '../store/userStore';
 import { useTaskStore } from '../store/taskStore';
 import { useProjectStore } from '../store/projectStore';
 import api, { isElectron } from '../utils/api';
 import { playChime } from '../utils/sound';
-import { todayKey } from '../utils/dateHelpers';
+import { todayKey, setTimeFormat } from '../utils/dateHelpers';
 import { useUiStore } from '../store/uiStore';
 import { applyTheme } from '../utils/theme';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -37,6 +37,9 @@ export default function SettingsView() {
   const theme = useUserStore((s) => s.settings.theme || 'dark');
   const sound = useUserStore((s) => s.settings.sound !== false);
   const notifications = useUserStore((s) => s.settings.notifications === true);
+  const weekStart = useUserStore((s) => s.settings.weekStart ?? 0);
+  const timeFormat = useUserStore((s) => s.settings.timeFormat || '12h');
+  const reminderLead = useUserStore((s) => s.settings.reminderLead ?? 0);
   const setSetting = useUserStore((s) => s.setSetting);
 
   const setTheme = (value) => {
@@ -47,6 +50,11 @@ export default function SettingsView() {
   const setSound = (value) => {
     setSetting('sound', value);
     if (value) setTimeout(playChime, 0);
+  };
+
+  const changeTimeFormat = (value) => {
+    setSetting('timeFormat', value);
+    setTimeFormat(value); // apply immediately across the app
   };
 
   const showToast = useUiStore((s) => s.showToast);
@@ -178,6 +186,37 @@ export default function SettingsView() {
         </div>
       </Section>
 
+      <Section title={<><CalendarDays size={13} /> Calendar & time</>}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-4)' }}>
+          <div>
+            <div style={{ fontSize: 'var(--fs-small)', color: 'var(--text-3)', marginBottom: 'var(--sp-2)' }}>
+              Week starts on
+            </div>
+            <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
+              <button className={`pill${weekStart === 0 ? ' selected' : ''}`} onClick={() => setSetting('weekStart', 0)}>
+                Sunday
+              </button>
+              <button className={`pill${weekStart === 1 ? ' selected' : ''}`} onClick={() => setSetting('weekStart', 1)}>
+                Monday
+              </button>
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 'var(--fs-small)', color: 'var(--text-3)', marginBottom: 'var(--sp-2)' }}>
+              Time format
+            </div>
+            <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
+              <button className={`pill${timeFormat === '12h' ? ' selected' : ''}`} onClick={() => changeTimeFormat('12h')}>
+                <Clock size={13} /> 12-hour
+              </button>
+              <button className={`pill${timeFormat === '24h' ? ' selected' : ''}`} onClick={() => changeTimeFormat('24h')}>
+                <Clock size={13} /> 24-hour
+              </button>
+            </div>
+          </div>
+        </div>
+      </Section>
+
       <Section title="Notifications">
         <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center', flexWrap: 'wrap' }}>
           <button
@@ -205,6 +244,29 @@ export default function SettingsView() {
             ? 'Blocked by your system. Enable Momentum in OS notification settings.'
             : 'A daily briefing, plus a reminder when a task with a due time comes due.'}
         </div>
+        {notifications && (
+          <div style={{ marginTop: 'var(--sp-4)' }}>
+            <div style={{ fontSize: 'var(--fs-small)', color: 'var(--text-3)', marginBottom: 'var(--sp-2)' }}>
+              Remind me before a task is due
+            </div>
+            <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap' }}>
+              {[
+                { v: 0, l: 'At due time' },
+                { v: 10, l: '10 min before' },
+                { v: 30, l: '30 min before' },
+                { v: 60, l: '1 hour before' },
+              ].map((o) => (
+                <button
+                  key={o.v}
+                  className={`pill${reminderLead === o.v ? ' selected' : ''}`}
+                  onClick={() => setSetting('reminderLead', o.v)}
+                >
+                  {o.l}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </Section>
 
       <Section title="Privacy & Data">

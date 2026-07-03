@@ -12,10 +12,19 @@ import {
   addDays,
 } from 'date-fns';
 
+// Time display format, set from user settings (see App). Kept as a module flag
+// so date helpers stay store-agnostic but still honor the 12h/24h preference.
+let TIME_24H = false;
+export function setTimeFormat(fmt) {
+  TIME_24H = fmt === '24h';
+}
+
 export function parse(dateStr) {
   if (!dateStr) return null;
   try {
-    return typeof dateStr === 'string' ? parseISO(dateStr) : dateStr;
+    if (typeof dateStr === 'string') return parseISO(dateStr);
+    if (dateStr instanceof Date) return dateStr;
+    return null; // ignore malformed values (numbers, objects) rather than crash
   } catch (_) {
     return null;
   }
@@ -117,5 +126,5 @@ export function dueTime(iso) {
   const d = parse(iso);
   if (!d || Number.isNaN(d.getTime())) return null;
   if (toTimeInputValue(iso) === '') return null;
-  return format(d, 'h:mm a');
+  return format(d, TIME_24H ? 'HH:mm' : 'h:mm a');
 }

@@ -1,5 +1,6 @@
 import { X, Link2 } from 'lucide-react';
 import { useTaskStore } from '../store/taskStore';
+import { wouldCreateCycle } from '../utils/taskHelpers';
 
 /**
  * Choose the tasks this one is "waiting on". `value` is an array of task ids;
@@ -10,7 +11,11 @@ export default function DependencySelector({ taskId, value = [], onChange }) {
   const tasks = useTaskStore((s) => s.tasks);
   const byId = new Map(tasks.map((t) => [t.id, t]));
   const options = tasks.filter(
-    (t) => t.id !== taskId && !value.includes(t.id) && !t.isCompleted
+    (t) =>
+      t.id !== taskId &&
+      !value.includes(t.id) &&
+      !t.isCompleted &&
+      !wouldCreateCycle(taskId, t.id, tasks)
   );
 
   const add = (id) => {

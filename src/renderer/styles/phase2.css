@@ -1263,7 +1263,7 @@ body.overlay-open .main-pane {
 .cal-day-head {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
+  gap: var(--sp-2);
   padding: var(--sp-2) var(--sp-3);
   border-bottom: 1px solid var(--border);
 }
@@ -1330,8 +1330,114 @@ body.overlay-open .main-pane {
   font-size: var(--fs-small);
   color: var(--text-3);
 }
+.cal-col.drag-over {
+  border-color: var(--gold-text);
+  background: var(--gold-soft);
+}
+.cal-add-btn {
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  color: var(--text-3);
+  border-radius: var(--radius-btn);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.cal-col:hover .cal-add-btn {
+  opacity: 1;
+}
+.cal-add-btn:hover {
+  color: var(--gold-text);
+}
+.cal-add-input {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--gold-text);
+  border-radius: var(--radius-btn);
+  padding: 5px 6px;
+  font-family: inherit;
+  font-size: var(--fs-small);
+  color: var(--text-1);
+  outline: none;
+}
+.cal-task {
+  cursor: grab;
+}
+.cal-task:active {
+  cursor: grabbing;
+}
 @media (max-width: 900px) {
   .cal-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Error boundary fallback                                             */
+/* ------------------------------------------------------------------ */
+.error-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  text-align: center;
+  padding: var(--sp-10) var(--sp-6);
+  color: var(--text-2);
+  animation: fadeIn var(--dur) var(--ease);
+}
+.error-fallback > svg {
+  color: var(--priority-critical);
+}
+.error-title {
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  color: var(--text-1);
+}
+.error-sub {
+  color: var(--text-3);
+  max-width: 360px;
+  line-height: 1.5;
+}
+.error-actions {
+  display: flex;
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+}
+
+/* ------------------------------------------------------------------ */
+/* Bulk selection (All Tasks)                                          */
+/* ------------------------------------------------------------------ */
+.bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  padding: var(--sp-2) var(--sp-3);
+  margin-bottom: var(--sp-4);
+  background: var(--surface-1);
+  border: 1px solid var(--gold-text);
+  border-radius: var(--radius-card);
+  animation: fadeIn var(--dur) var(--ease);
+}
+.bulk-count {
+  font-weight: 600;
+  color: var(--text-1);
+  font-size: var(--fs-body);
+  padding: 0 var(--sp-2);
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.checkbox.select-box {
+  border-radius: var(--radius-input);
+}
+.checkbox.select-box.checked {
+  background: var(--gold-text);
+  border-color: var(--gold-text);
+  color: #1a1510;
+}
+.task-card.selected {
+  border-color: var(--gold-text);
+  background: var(--gold-soft);
 }
