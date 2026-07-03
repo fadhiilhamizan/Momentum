@@ -78,6 +78,7 @@ const mock = {
         isStarred: false,
         tags: [],
         subtasks: [],
+        dependsOn: [],
         sortOrder: 0,
         createdAt: now,
         updatedAt: now,

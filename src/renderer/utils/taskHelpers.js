@@ -62,6 +62,19 @@ export function suggestForBudget(tasks, minutes) {
     .slice(0, 3);
 }
 
+/** Tasks this one is "waiting on" that aren't finished yet. `all` is the list. */
+export function blockingTasks(task, all) {
+  const deps = task.dependsOn || [];
+  if (!deps.length) return [];
+  const byId = new Map(all.map((t) => [t.id, t]));
+  return deps.map((id) => byId.get(id)).filter((t) => t && !t.isCompleted);
+}
+
+/** True when a task is blocked by at least one unfinished dependency. */
+export function isBlocked(task, all) {
+  return blockingTasks(task, all).length > 0;
+}
+
 export function sortTasks(tasks, by = 'priority') {
   const copy = [...tasks];
   switch (by) {

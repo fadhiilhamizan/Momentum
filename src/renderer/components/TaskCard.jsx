@@ -1,20 +1,21 @@
 import { useState, useRef, useEffect } from 'react';
 import cn from 'classnames';
 import {
-  Check, Star, Trash2, Clock, Calendar, Zap, Timer, Repeat, Hash, CheckSquare, FolderPlus,
+  Check, Star, Trash2, Clock, Calendar, Zap, Timer, Repeat, Hash, CheckSquare, FolderPlus, Lock,
 } from 'lucide-react';
 import { useTaskStore } from '../store/taskStore';
 import { useUserStore } from '../store/userStore';
 import { useUiStore } from '../store/uiStore';
 import { useProjectStore } from '../store/projectStore';
 import { useFocusStore } from '../store/focusStore';
-import { priorityColor, timeLabel } from '../utils/taskHelpers';
+import { priorityColor, timeLabel, blockingTasks } from '../utils/taskHelpers';
 import { dueLabel, dueTime, dueUrgency, isOverdue } from '../utils/dateHelpers';
 import { isStreakMilestone } from '../utils/gamification';
 import { playChime, playFanfare } from '../utils/sound';
 
 export default function TaskCard({ task }) {
   const { toggleComplete, updateTask, deleteTask } = useTaskStore();
+  const allTasks = useTaskStore((s) => s.tasks);
   const refreshStreak = useUserStore((s) => s.refreshStreak);
   const { celebrate, showToast, openTask, burstConfetti } = useUiStore();
   const projects = useProjectStore((s) => s.projects);
@@ -43,6 +44,8 @@ export default function TaskCard({ task }) {
   const subtasks = task.subtasks || [];
   const doneSubs = subtasks.filter((s) => s.done).length;
   const tags = task.tags || [];
+  const blockers = task.isCompleted ? [] : blockingTasks(task, allTasks);
+  const blocked = blockers.length > 0;
 
   const onToggle = async () => {
     const next = !task.isCompleted;
@@ -94,6 +97,14 @@ export default function TaskCard({ task }) {
         <div className="task-title">{task.title}</div>
 
         <div className="task-meta">
+          {blocked && (
+            <span
+              className="tag blocked"
+              title={`Waiting on: ${blockers.map((b) => b.title).join(', ')}`}
+            >
+              <Lock size={11} /> Waiting on {blockers.length}
+            </span>
+          )}
           <span className="tag" title={`${task.priority} priority`}>
             <span className="dot" style={{ background: priorityColor(task.priority) }} />
             {task.priority}

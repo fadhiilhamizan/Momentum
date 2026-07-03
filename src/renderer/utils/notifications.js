@@ -3,7 +3,7 @@
  * Electron surfaces as native OS toasts and browsers show natively too.
  */
 import { useUserStore } from '../store/userStore';
-import { isDueToday, isOverdue, todayKey } from './dateHelpers';
+import { isDueToday, isOverdue, todayKey, dueTime } from './dateHelpers';
 import { priorityRank } from './taskHelpers';
 
 export function permission() {
@@ -78,4 +78,59 @@ export function maybeDailyBriefing(tasks) {
   const briefing = buildBriefing(tasks);
   if (briefing) notify(briefing.title, briefing.body);
   setSetting('lastBriefing', today);
+}
+
+// ---------------------------------------------------------------------------
+// Due-time reminders ("start focus at X")
+// ---------------------------------------------------------------------------
+
+const REMINDED_KEY = 'momentum:reminded';
+
+function loadReminded() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(REMINDED_KEY)) || []);
+  } catch (_) {
+    return new Set();
+  }
+}
+function saveReminded(set) {
+  try {
+    // Keep the most recent keys only so it can't grow without bound.
+    localStorage.setItem(REMINDED_KEY, JSON.stringify([...set].slice(-200)));
+  } catch (_) {
+    /* storage unavailable */
+  }
+}
+
+/**
+ * Which tasks have reached their due time and haven't been reminded yet? Pure,
+ * so it's easy to test. Only tasks with a specific time fire an individual
+ * reminder (date-only tasks are covered by the daily briefing). A reminder is
+ * eligible from the due time up to `windowMs` afterward, so a task whose time
+ * passed while the app was closed still surfaces once on next launch.
+ */
+export function dueReminders(tasks, nowMs, reminded, windowMs = 6 * 60 * 60 * 1000) {
+  const out = [];
+  for (const t of tasks) {
+    if (t.isCompleted || !t.dueDate || !dueTime(t.dueDate)) continue;
+    const due = new Date(t.dueDate).getTime();
+    if (Number.isNaN(due)) continue;
+    const key = `${t.id}@${due}`;
+    if (reminded.has(key)) continue;
+    if (due <= nowMs && nowMs - due <= windowMs) out.push({ task: t, key });
+  }
+  return out;
+}
+
+/** Fire a desktop reminder for any timed task that has come due. */
+export function maybeFireReminders(tasks) {
+  if (!enabled()) return;
+  const reminded = loadReminded();
+  const due = dueReminders(tasks, Date.now(), reminded);
+  if (!due.length) return;
+  for (const { task, key } of due) {
+    notify('Time to focus', `${task.title} is due (${dueTime(task.dueDate)}).`);
+    reminded.add(key);
+  }
+  saveReminded(reminded);
 }

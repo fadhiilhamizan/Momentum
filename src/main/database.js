@@ -113,6 +113,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   isStarred INTEGER DEFAULT 0,
   tags TEXT,
   subtasks TEXT,
+  dependsOn TEXT,
   sortOrder INTEGER DEFAULT 0,
   createdAt TEXT,
   updatedAt TEXT
@@ -161,6 +162,15 @@ CREATE INDEX IF NOT EXISTS idx_tasks_due ON tasks(dueDate);
 CREATE INDEX IF NOT EXISTS idx_history_task ON completionHistory(taskId);
 `;
 
+/** Add a column to an existing table when the schema evolves — CREATE TABLE
+    IF NOT EXISTS won't alter a table that a previous version already created. */
+function ensureColumn(table, column, ddl) {
+  const cols = all(`PRAGMA table_info(${table})`);
+  if (!cols.some((c) => c.name === column)) {
+    db.run(`ALTER TABLE ${table} ADD COLUMN ${ddl}`);
+  }
+}
+
 /** Initialize the database engine and load (or create) the on-disk file. */
 async function init() {
   if (db) return;
@@ -174,6 +184,8 @@ async function init() {
     db = new SQL.Database();
   }
   db.run(SCHEMA);
+  // Migrations for databases created by earlier versions.
+  ensureColumn('tasks', 'dependsOn', 'dependsOn TEXT');
   ensureSingletonStreak();
   persistNow();
 }
@@ -243,6 +255,7 @@ function mapTask(row) {
     isStarred: toBool(row.isStarred),
     tags: parseJson(row.tags, []),
     subtasks: parseJson(row.subtasks, []),
+    dependsOn: parseJson(row.dependsOn, []),
   };
 }
 
@@ -277,12 +290,12 @@ const tasks = {
       `INSERT INTO tasks (
         id, title, description, projectId, priority, energyRequired,
         timeEstimate, bestTime, dueDate, completedDate, isCompleted,
-        isRecurring, recurrencePattern, isStarred, tags, subtasks,
+        isRecurring, recurrencePattern, isStarred, tags, subtasks, dependsOn,
         sortOrder, createdAt, updatedAt
       ) VALUES (
         $id, $title, $description, $projectId, $priority, $energyRequired,
         $timeEstimate, $bestTime, $dueDate, $completedDate, $isCompleted,
-        $isRecurring, $recurrencePattern, $isStarred, $tags, $subtasks,
+        $isRecurring, $recurrencePattern, $isStarred, $tags, $subtasks, $dependsOn,
         $sortOrder, $createdAt, $updatedAt
       )`,
       {
@@ -302,6 +315,7 @@ const tasks = {
         $isStarred: input.isStarred ? 1 : 0,
         $tags: JSON.stringify(input.tags || []),
         $subtasks: JSON.stringify(input.subtasks || []),
+        $dependsOn: JSON.stringify(input.dependsOn || []),
         $sortOrder: input.sortOrder ?? 0,
         $createdAt: now,
         $updatedAt: now,
@@ -322,7 +336,7 @@ const tasks = {
         completedDate = $completedDate, isCompleted = $isCompleted,
         isRecurring = $isRecurring, recurrencePattern = $recurrencePattern,
         isStarred = $isStarred, tags = $tags, subtasks = $subtasks,
-        sortOrder = $sortOrder, updatedAt = $updatedAt
+        dependsOn = $dependsOn, sortOrder = $sortOrder, updatedAt = $updatedAt
       WHERE id = $id`,
       {
         $id: id,
@@ -341,6 +355,7 @@ const tasks = {
         $isStarred: merged.isStarred ? 1 : 0,
         $tags: JSON.stringify(merged.tags || []),
         $subtasks: JSON.stringify(merged.subtasks || []),
+        $dependsOn: JSON.stringify(merged.dependsOn || []),
         $sortOrder: merged.sortOrder ?? 0,
         $updatedAt: new Date().toISOString(),
       }
@@ -411,6 +426,7 @@ const tasks = {
           isStarred: task.isStarred,
           tags: task.tags,
           subtasks: (task.subtasks || []).map((s) => ({ ...s, done: false })),
+          dependsOn: task.dependsOn,
         });
       }
     }
@@ -646,11 +662,11 @@ function importData(payload = {}) {
       `INSERT OR REPLACE INTO tasks (
         id, title, description, projectId, priority, energyRequired, timeEstimate,
         bestTime, dueDate, completedDate, isCompleted, isRecurring, recurrencePattern,
-        isStarred, tags, subtasks, sortOrder, createdAt, updatedAt
+        isStarred, tags, subtasks, dependsOn, sortOrder, createdAt, updatedAt
       ) VALUES (
         $id, $title, $description, $projectId, $priority, $energyRequired, $timeEstimate,
         $bestTime, $dueDate, $completedDate, $isCompleted, $isRecurring, $recurrencePattern,
-        $isStarred, $tags, $subtasks, $sortOrder, $createdAt, $updatedAt
+        $isStarred, $tags, $subtasks, $dependsOn, $sortOrder, $createdAt, $updatedAt
       )`,
       {
         $id: t.id,
@@ -669,6 +685,7 @@ function importData(payload = {}) {
         $isStarred: t.isStarred ? 1 : 0,
         $tags: JSON.stringify(t.tags || []),
         $subtasks: JSON.stringify(t.subtasks || []),
+        $dependsOn: JSON.stringify(t.dependsOn || []),
         $sortOrder: t.sortOrder ?? 0,
         $createdAt: t.createdAt || now,
         $updatedAt: t.updatedAt || now,

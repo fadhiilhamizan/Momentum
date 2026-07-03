@@ -203,7 +203,7 @@ export default function SettingsView() {
             ? 'Notifications are not supported here.'
             : permission() === 'denied'
             ? 'Blocked by your system. Enable Momentum in OS notification settings.'
-            : 'A once-a-day briefing of your most important tasks.'}
+            : 'A daily briefing, plus a reminder when a task with a due time comes due.'}
         </div>
       </Section>
 

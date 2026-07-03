@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import cn from 'classnames';
 import {
   Target,
+  CalendarDays,
   ListChecks,
   Star,
   FolderKanban,
@@ -22,6 +23,7 @@ import ProgressModal from './ProgressModal';
 
 const NAV = [
   { to: '/today', label: 'Today', icon: Target },
+  { to: '/calendar', label: 'Calendar', icon: CalendarDays },
   { to: '/tasks', label: 'All Tasks', icon: ListChecks, badge: 'open' },
   { to: '/starred', label: 'Starred', icon: Star, badge: 'starred' },
   { to: '/projects', label: 'Projects', icon: FolderKanban },

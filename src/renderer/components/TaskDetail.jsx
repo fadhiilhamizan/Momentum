@@ -7,6 +7,7 @@ import TimeSelector from './TimeSelector';
 import ProjectSelect from './ProjectSelect';
 import TagEditor from './TagEditor';
 import SubtaskEditor from './SubtaskEditor';
+import DependencySelector from './DependencySelector';
 import { useTaskStore } from '../store/taskStore';
 import { useUiStore } from '../store/uiStore';
 import { BEST_TIMES } from '../utils/taskHelpers';
@@ -165,6 +166,14 @@ export default function TaskDetail() {
           <Repeat size={13} /> Completing this task schedules the next one automatically.
         </div>
       )}
+
+      <Field label="Waiting on">
+        <DependencySelector
+          taskId={task.id}
+          value={task.dependsOn}
+          onChange={(dependsOn) => set({ dependsOn })}
+        />
+      </Field>
 
       <Field label="Tags">
         <TagEditor value={task.tags} onChange={(tags) => set({ tags })} />

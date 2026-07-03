@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import CelebrationLayer from './components/CelebrationLayer';
 import TodayView from './pages/TodayView';
+import CalendarView from './pages/CalendarView';
 import AllTasksView from './pages/AllTasksView';
 import StarredView from './pages/StarredView';
 import ProjectsView from './pages/ProjectsView';
@@ -20,7 +21,7 @@ import { useTaskStore } from './store/taskStore';
 import { useProjectStore } from './store/projectStore';
 import { useUserStore } from './store/userStore';
 import { useUiStore } from './store/uiStore';
-import { maybeDailyBriefing } from './utils/notifications';
+import { maybeDailyBriefing, maybeFireReminders } from './utils/notifications';
 import { levelFromXp, xpFromCompletions } from './utils/gamification';
 import { playFanfare } from './utils/sound';
 import { applyTheme } from './utils/theme';
@@ -81,6 +82,17 @@ export default function App() {
       });
     });
   }, [loadTasks, loadProjects, loadStreak, loadSettings]);
+
+  // Periodically surface due-time reminders while the app is open.
+  useEffect(() => {
+    const check = () => maybeFireReminders(useTaskStore.getState().tasks);
+    const kickoff = setTimeout(check, 5000);
+    const id = setInterval(check, 60 * 1000);
+    return () => {
+      clearTimeout(kickoff);
+      clearInterval(id);
+    };
+  }, []);
 
   // Global keyboard shortcuts.
   useEffect(() => {
@@ -145,6 +157,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/today" replace />} />
           <Route path="/today" element={<TodayView />} />
+          <Route path="/calendar" element={<CalendarView />} />
           <Route path="/tasks" element={<AllTasksView />} />
           <Route path="/starred" element={<StarredView />} />
           <Route path="/projects" element={<ProjectsView />} />

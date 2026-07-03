@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Search, Calendar, ListChecks, Star, Folder, BarChart3,
+  Search, Calendar, CalendarDays, ListChecks, Star, Folder, BarChart3,
   NotebookPen, Settings, Info, Plus, CircleHelp,
 } from 'lucide-react';
 import { useTaskStore } from '../store/taskStore';
@@ -47,6 +47,7 @@ export default function CommandPalette() {
         },
       },
       { id: 'today', label: 'Go to Today', hint: 'View', Icon: Calendar, run: go('/today') },
+      { id: 'calendar', label: 'Go to Calendar', hint: 'View', Icon: CalendarDays, run: go('/calendar') },
       { id: 'tasks', label: 'Go to All Tasks', hint: 'View', Icon: ListChecks, run: go('/tasks') },
       { id: 'starred', label: 'Go to Starred', hint: 'View', Icon: Star, run: go('/starred') },
       { id: 'projects', label: 'Go to Projects', hint: 'View', Icon: Folder, run: go('/projects') },

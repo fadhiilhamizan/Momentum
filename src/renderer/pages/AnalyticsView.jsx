@@ -1,18 +1,21 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { format, parseISO } from 'date-fns';
 import {
-  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, PieChart, Pie, Cell,
+  ResponsiveContainer, AreaChart, Area, LineChart, Line, XAxis, YAxis, Tooltip, PieChart, Pie, Cell,
 } from 'recharts';
 import {
-  CheckCircle2, Flame, ListTodo, Trophy, TrendingUp, PieChart as PieIcon, CalendarDays, Lightbulb,
+  CheckCircle2, Flame, ListTodo, Trophy, TrendingUp, PieChart as PieIcon, CalendarDays, Lightbulb, Smile,
 } from 'lucide-react';
 import { useTaskStore } from '../store/taskStore';
 import { useProjectStore } from '../store/projectStore';
 import { useUserStore } from '../store/userStore';
 import Heatmap from '../components/Heatmap';
 import CountUp from '../components/CountUp';
+import api from '../utils/api';
 import {
   PERIODS, periodDays, completionsByDay, projectBreakdown, heatmap, insights,
 } from '../utils/analyticsHelpers';
+import { reflectionStats } from '../utils/reflectionHelpers';
 import { levelFromXp, xpFromCompletions } from '../utils/gamification';
 
 export default function AnalyticsView() {
@@ -21,6 +24,24 @@ export default function AnalyticsView() {
   const streak = useUserStore((s) => s.streak);
   const theme = useUserStore((s) => s.settings.theme);
   const [period, setPeriod] = useState('month');
+
+  // Reflection insights are computed from the stored reflections (loaded once).
+  const [reflections, setReflections] = useState([]);
+  useEffect(() => {
+    let alive = true;
+    api.reflections
+      .list(365)
+      .then((r) => alive && setReflections(r || []))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+  const rstats = useMemo(() => reflectionStats(reflections), [reflections]);
+  const moodChart = useMemo(
+    () => rstats.moodSeries.map((m) => ({ ...m, label: format(parseISO(m.date), 'MMM d') })),
+    [rstats]
+  );
 
   const isLight = theme === 'light';
   const tooltipStyle = {
@@ -208,6 +229,69 @@ export default function AnalyticsView() {
             {line}
           </div>
         ))}
+      </div>
+
+      {reflections.length > 0 && (
+        <div className="panel" style={{ marginTop: 'var(--sp-4)' }}>
+          <div className="panel-title">
+            <Smile size={15} color="var(--gold-text)" /> Reflection
+          </div>
+          <div style={{ display: 'flex', gap: 'var(--sp-6)', flexWrap: 'wrap', marginBottom: 'var(--sp-4)' }}>
+            <RStat label="Days reflected" value={rstats.count} />
+            <RStat label="Reflection streak" value={rstats.streak} />
+            {rstats.avgMood != null && <RStat label="Avg mood" value={`${rstats.avgMood.toFixed(1)}/5`} />}
+          </div>
+          {moodChart.length >= 2 ? (
+            <ResponsiveContainer width="100%" height={170}>
+              <LineChart data={moodChart} margin={{ top: 4, right: 6, left: -24, bottom: 0 }}>
+                <XAxis
+                  dataKey="label"
+                  tick={{ fontSize: 10, fill: '#8b8680' }}
+                  axisLine={{ stroke: '#2a251f' }}
+                  tickLine={false}
+                />
+                <YAxis
+                  domain={[1, 5]}
+                  ticks={[1, 2, 3, 4, 5]}
+                  tick={{ fontSize: 10, fill: '#8b8680' }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={28}
+                />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  itemStyle={tooltipItemStyle}
+                  labelStyle={tooltipItemStyle}
+                  formatter={(v, n, p) => [p.payload.mood, 'Mood']}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#d4af37"
+                  strokeWidth={2}
+                  dot={{ r: 3, fill: '#d4af37', strokeWidth: 0 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div style={{ color: 'var(--text-3)' }}>
+              Log your mood a few days in a row to see a trend.
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RStat({ label, value }) {
+  return (
+    <div>
+      <div style={{ fontSize: 'var(--fs-h2)', fontWeight: 700, color: 'var(--text-1)' }}>
+        {value}
+      </div>
+      <div style={{ fontSize: 'var(--fs-tiny)', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)' }}>
+        {label}
       </div>
     </div>
   );
