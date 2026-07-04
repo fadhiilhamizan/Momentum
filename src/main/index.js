@@ -1,4 +1,5 @@
-const { app, BrowserWindow, ipcMain, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, dialog } = require('electron');
+const fs = require('fs');
 const path = require('path');
 const Store = require('electron-store');
 const db = require('./database');
@@ -13,14 +14,36 @@ if (require('electron-squirrel-startup')) {
 }
 
 // These globals are injected by the Electron Forge Webpack plugin.
-// eslint-disable-next-line no-undef
+ 
 const ENTRY = MAIN_WINDOW_WEBPACK_ENTRY;
-// eslint-disable-next-line no-undef
+ 
 const PRELOAD = MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY;
 
 const settings = new Store({ name: 'momentum-settings' });
 
 let mainWindow = null;
+
+/** Build the full export payload straight from the database. */
+function buildBackupPayload() {
+  return {
+    app: 'Momentum',
+    version: app.getVersion(),
+    exportedAt: new Date().toISOString(),
+    tasks: db.tasks.list(),
+    projects: db.projects.list(),
+    reflections: db.reflections.list(9999),
+    streak: db.streaks.get(),
+  };
+}
+
+/** Write a dated backup JSON into `dir` (one file per day). Returns file+time. */
+function writeBackup(dir) {
+  const file = path.join(dir, `momentum-backup-${new Date().toISOString().slice(0, 10)}.json`);
+  fs.writeFileSync(file, JSON.stringify(buildBackupPayload(), null, 2));
+  const time = new Date().toISOString();
+  settings.set('lastBackup', time);
+  return { file, time };
+}
 
 /**
  * Enable auto-updates via update.electronjs.org (free, no server to run) once a
@@ -123,6 +146,26 @@ function registerIpc() {
   handle('data:import', (payload) => db.importData(payload));
   handle('data:clear', () => db.clearAll());
 
+  // Auto-backup to a folder
+  handle('backup:choose', async () => {
+    const res = await dialog.showOpenDialog(mainWindow, {
+      title: 'Choose a backup folder',
+      properties: ['openDirectory', 'createDirectory'],
+    });
+    return res.canceled || !res.filePaths.length ? null : res.filePaths[0];
+  });
+  handle('backup:now', (dir) => {
+    const target = dir || settings.get('backupDir');
+    if (!target) return { ok: false, reason: 'no-folder' };
+    try {
+      const { file, time } = writeBackup(target);
+      return { ok: true, path: file, time };
+    } catch (err) {
+      log('backup:now failed', err);
+      return { ok: false, reason: String(err) };
+    }
+  });
+
   // App metadata — the authoritative runtime version (matches the installed build).
   handle('app:getVersion', () => app.getVersion());
 
@@ -164,5 +207,12 @@ app.on('before-quit', () => {
     db.persistNow();
   } catch (_) {
     /* nothing to flush */
+  }
+  try {
+    if (settings.get('autoBackup') && settings.get('backupDir')) {
+      writeBackup(settings.get('backupDir'));
+    }
+  } catch (err) {
+    log('auto-backup failed', err);
   }
 });

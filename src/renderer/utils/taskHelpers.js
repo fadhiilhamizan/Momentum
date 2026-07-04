@@ -108,7 +108,14 @@ export function sortTasks(tasks, by = 'priority') {
         (a, b) => priorityRank(a.priority) - priorityRank(b.priority)
       );
     case 'due':
-      return copy.sort((a, b) => (a.dueDate || '~').localeCompare(b.dueDate || '~'));
+      // Earliest due date first; undated tasks always sort to the end. (A '~'
+      // sentinel isn't reliable — localeCompare orders punctuation before digits
+      // in many locales, which would float undated tasks to the top.)
+      return copy.sort((a, b) => {
+        if (!a.dueDate) return b.dueDate ? 1 : 0;
+        if (!b.dueDate) return -1;
+        return a.dueDate.localeCompare(b.dueDate);
+      });
     case 'created':
       return copy.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
     case 'energy': {

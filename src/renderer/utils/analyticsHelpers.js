@@ -9,12 +9,15 @@ import {
   parseISO,
   startOfDay,
   startOfWeek,
+  endOfWeek,
   subWeeks,
   eachDayOfInterval,
   subDays,
   getDay,
   getHours,
   isAfter,
+  isWithinInterval,
+  isSameDay,
 } from 'date-fns';
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -139,4 +142,33 @@ export function insights(tasks) {
 export function periodDays(period) {
   const p = PERIODS.find((x) => x.value === period);
   return p ? p.days : 30;
+}
+
+/**
+ * Summary of the current week for the goal / weekly-review panel: how many
+ * tasks were completed, a per-day breakdown, the most productive day, and how
+ * many days had at least one completion.
+ */
+export function weeklyReview(tasks, weekStartsOn = 0, now = new Date()) {
+  const start = startOfWeek(now, { weekStartsOn });
+  const end = endOfWeek(now, { weekStartsOn });
+  const dates = completedDates(tasks).filter((d) => isWithinInterval(d, { start, end }));
+
+  const byDay = eachDayOfInterval({ start, end }).map((day) => ({
+    label: format(day, 'EEE'),
+    fullLabel: format(day, 'EEEE'),
+    count: dates.filter((d) => isSameDay(d, day)).length,
+    isToday: isSameDay(day, now),
+  }));
+
+  const activeDays = byDay.filter((d) => d.count > 0).length;
+  const best = byDay.reduce((a, b) => (b.count > a.count ? b : a), byDay[0]);
+
+  return {
+    completed: dates.length,
+    byDay,
+    activeDays,
+    topDay: best && best.count > 0 ? best.fullLabel : null,
+    rangeLabel: `${format(start, 'MMM d')} to ${format(end, 'MMM d')}`,
+  };
 }

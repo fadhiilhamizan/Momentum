@@ -232,6 +232,109 @@
 .subtask-row:hover .subtask-remove {
   opacity: 1;
 }
+.subtask-date {
+  flex-shrink: 0;
+  width: 122px;
+  padding: 2px 6px;
+  font-family: inherit;
+  font-size: var(--fs-tiny);
+  color: var(--text-3);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-input);
+  opacity: 0.55;
+  transition: opacity var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+.subtask-row:hover .subtask-date,
+.subtask-date:focus {
+  opacity: 1;
+  border-color: var(--border);
+}
+.subtask-date.overdue {
+  color: var(--priority-critical);
+  opacity: 1;
+}
+.subtask-addchild {
+  opacity: 0;
+  color: var(--text-3);
+}
+.subtask-row:hover .subtask-addchild {
+  opacity: 1;
+}
+.subtask-addchild:hover {
+  color: var(--gold-text);
+}
+
+/* ------------------------------------------------------------------ */
+/* Weekly goal / review panel (Analytics)                             */
+/* ------------------------------------------------------------------ */
+.week-body {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  flex-wrap: wrap;
+}
+.week-goal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.week-goal-label {
+  font-size: var(--fs-small);
+  color: var(--text-2);
+}
+.week-bars {
+  display: flex;
+  gap: var(--sp-3);
+}
+.week-bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.week-bar-track {
+  width: 12px;
+  height: 64px;
+  background: var(--surface-3);
+  border-radius: 999px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+.week-bar-fill {
+  width: 100%;
+  min-height: 2px;
+  background: var(--gold);
+  border-radius: 999px;
+  transition: height var(--dur) var(--ease);
+}
+.week-bar-col.today .week-bar-fill {
+  background: var(--gold-light);
+}
+.week-bar-count,
+.week-bar-label {
+  font-size: var(--fs-tiny);
+  color: var(--text-3);
+}
+.week-bar-label {
+  text-transform: uppercase;
+}
+.week-bar-col.today .week-bar-label {
+  color: var(--gold-text);
+  font-weight: 700;
+}
+.week-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  font-size: var(--fs-body);
+  color: var(--text-2);
+}
+.week-summary strong {
+  color: var(--text-1);
+}
 .subtask-progress {
   display: inline-flex;
   align-items: center;

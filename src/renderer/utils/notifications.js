@@ -33,7 +33,7 @@ export function enabled() {
 export function notify(title, body, opts = {}) {
   if (!supported() || permission() !== 'granted') return;
   try {
-    // eslint-disable-next-line no-new
+     
     new Notification(title, { body, silent: false, ...opts });
   } catch (_) {
     /* notification failed */

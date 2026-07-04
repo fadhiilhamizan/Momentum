@@ -5,7 +5,7 @@ const path = require('path');
 const Module = require('module');
 
 const origLoad = Module._load;
-Module._load = function (request, parent, isMain) {
+Module._load = function (request, _parent, _isMain) {
   if (request === 'electron') {
     return {
       app: {

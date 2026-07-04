@@ -35,7 +35,7 @@ function log(...args) {
     /* logging must never throw */
   }
   // Also echo to stdout for `npm start` visibility.
-  // eslint-disable-next-line no-console
+   
   console.log('[momentum]', ...args);
 }
 

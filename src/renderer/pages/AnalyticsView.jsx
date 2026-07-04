@@ -4,16 +4,17 @@ import {
   ResponsiveContainer, AreaChart, Area, LineChart, Line, XAxis, YAxis, Tooltip, PieChart, Pie, Cell,
 } from 'recharts';
 import {
-  CheckCircle2, Flame, ListTodo, Trophy, TrendingUp, PieChart as PieIcon, CalendarDays, Lightbulb, Smile,
+  CheckCircle2, Flame, ListTodo, Trophy, TrendingUp, PieChart as PieIcon, CalendarDays, Lightbulb, Smile, Target,
 } from 'lucide-react';
 import { useTaskStore } from '../store/taskStore';
 import { useProjectStore } from '../store/projectStore';
 import { useUserStore } from '../store/userStore';
 import Heatmap from '../components/Heatmap';
 import CountUp from '../components/CountUp';
+import ProgressRing from '../components/ProgressRing';
 import api from '../utils/api';
 import {
-  PERIODS, periodDays, completionsByDay, projectBreakdown, heatmap, insights,
+  PERIODS, periodDays, completionsByDay, projectBreakdown, heatmap, insights, weeklyReview,
 } from '../utils/analyticsHelpers';
 import { reflectionStats } from '../utils/reflectionHelpers';
 import { levelFromXp, xpFromCompletions } from '../utils/gamification';
@@ -23,7 +24,13 @@ export default function AnalyticsView() {
   const projects = useProjectStore((s) => s.projects);
   const streak = useUserStore((s) => s.streak);
   const theme = useUserStore((s) => s.settings.theme);
+  const weeklyGoal = useUserStore((s) => s.settings.weeklyGoal || 0);
+  const weekStart = useUserStore((s) => s.settings.weekStart ?? 0);
   const [period, setPeriod] = useState('month');
+
+  const review = useMemo(() => weeklyReview(tasks, weekStart), [tasks, weekStart]);
+  const goalPct = weeklyGoal > 0 ? Math.min(1, review.completed / weeklyGoal) : 0;
+  const maxDay = Math.max(1, ...review.byDay.map((d) => d.count));
 
   // Reflection insights are computed from the stored reflections (loaded once).
   const [reflections, setReflections] = useState([]);
@@ -99,6 +106,45 @@ export default function AnalyticsView() {
               {p.label}
             </button>
           ))}
+        </div>
+      </div>
+
+      <div className="panel" style={{ marginBottom: 'var(--sp-4)' }}>
+        <div className="panel-title">
+          <Target size={15} color="var(--gold-text)" /> This week
+          <span style={{ marginLeft: 'auto', fontSize: 'var(--fs-small)', color: 'var(--text-3)', fontWeight: 400 }}>
+            {review.rangeLabel}
+          </span>
+        </div>
+        <div className="week-body">
+          {weeklyGoal > 0 && (
+            <div className="week-goal">
+              <ProgressRing value={goalPct} size={76} stroke={7}>
+                {review.completed}/{weeklyGoal}
+              </ProgressRing>
+              <div className="week-goal-label">
+                {review.completed >= weeklyGoal
+                  ? 'Goal reached!'
+                  : `${weeklyGoal - review.completed} to go`}
+              </div>
+            </div>
+          )}
+          <div className="week-bars">
+            {review.byDay.map((d, i) => (
+              <div key={i} className={`week-bar-col${d.isToday ? ' today' : ''}`} title={`${d.fullLabel}: ${d.count}`}>
+                <div className="week-bar-count">{d.count}</div>
+                <div className="week-bar-track">
+                  <div className="week-bar-fill" style={{ height: `${(d.count / maxDay) * 100}%` }} />
+                </div>
+                <div className="week-bar-label">{d.label[0]}</div>
+              </div>
+            ))}
+          </div>
+          <div className="week-summary">
+            <div><strong>{review.completed}</strong> completed</div>
+            <div><strong>{review.activeDays}</strong> active day{review.activeDays === 1 ? '' : 's'}</div>
+            {review.topDay && <div>Best day: <strong>{review.topDay}</strong></div>}
+          </div>
         </div>
       </div>
 

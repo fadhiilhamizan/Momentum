@@ -9,6 +9,7 @@
  */
 
 import { nextDueDate } from './recurrence';
+import { resetSubtasks } from '../../shared/subtasks';
 
 const hasBridge = typeof window !== 'undefined' && !!window.momentum;
 
@@ -142,7 +143,7 @@ const mock = {
             isCompleted: false,
             completedDate: null,
             dueDate: nextDueDate(t.dueDate, t.recurrencePattern),
-            subtasks: (t.subtasks || []).map((st) => ({ ...st, done: false })),
+            subtasks: resetSubtasks(t.subtasks),
             createdAt: now,
             updatedAt: now,
           });
@@ -217,6 +218,15 @@ const mock = {
     // DefinePlugin bakes in (replaced at compile time, no runtime `process`).
     async getVersion() {
       return process.env.APP_VERSION || '0.0.0';
+    },
+  },
+  backup: {
+    // Auto-backup writes to the filesystem, which only the desktop app can do.
+    async choose() {
+      return null;
+    },
+    async now() {
+      return { ok: false, reason: 'unavailable' };
     },
   },
   data: {

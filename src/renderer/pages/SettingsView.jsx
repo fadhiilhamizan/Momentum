@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Moon, Sun, Monitor, Shield, Database, Volume2, VolumeX, Download, Upload, Bell, BellOff, Trash2, AlertTriangle, CalendarDays, Clock } from 'lucide-react';
+import { Moon, Sun, Monitor, Shield, Database, Volume2, VolumeX, Download, Upload, Bell, BellOff, Trash2, AlertTriangle, CalendarDays, Clock, Target, FolderOpen, Save } from 'lucide-react';
 import { useUserStore } from '../store/userStore';
 import { useTaskStore } from '../store/taskStore';
 import { useProjectStore } from '../store/projectStore';
@@ -40,7 +40,31 @@ export default function SettingsView() {
   const weekStart = useUserStore((s) => s.settings.weekStart ?? 0);
   const timeFormat = useUserStore((s) => s.settings.timeFormat || '12h');
   const reminderLead = useUserStore((s) => s.settings.reminderLead ?? 0);
+  const weeklyGoal = useUserStore((s) => s.settings.weeklyGoal || 0);
+  const autoBackup = useUserStore((s) => s.settings.autoBackup === true);
+  const backupDir = useUserStore((s) => s.settings.backupDir || '');
   const setSetting = useUserStore((s) => s.setSetting);
+  const [lastBackup, setLastBackup] = useState(
+    () => useUserStore.getState().settings.lastBackup || null
+  );
+
+  const chooseBackupFolder = async () => {
+    const dir = await api.backup.choose();
+    if (dir) setSetting('backupDir', dir);
+  };
+  const backupNow = async () => {
+    const res = await api.backup.now(backupDir || undefined);
+    if (res && res.ok) {
+      setLastBackup(res.time);
+      setSetting('lastBackup', res.time);
+      showToast('Backup saved', 'sparkles');
+    } else {
+      showToast(
+        res && res.reason === 'no-folder' ? 'Choose a backup folder first' : "Couldn't back up there",
+        'sparkles'
+      );
+    }
+  };
 
   const setTheme = (value) => {
     setSetting('theme', value);
@@ -217,6 +241,23 @@ export default function SettingsView() {
         </div>
       </Section>
 
+      <Section title={<><Target size={13} /> Weekly goal</>}>
+        <div style={{ fontSize: 'var(--fs-small)', color: 'var(--text-3)', marginBottom: 'var(--sp-2)' }}>
+          Tasks to complete each week (tracked on Analytics)
+        </div>
+        <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap' }}>
+          {[0, 5, 10, 15, 20].map((n) => (
+            <button
+              key={n}
+              className={`pill${weeklyGoal === n ? ' selected' : ''}`}
+              onClick={() => setSetting('weeklyGoal', n)}
+            >
+              {n === 0 ? 'Off' : n}
+            </button>
+          ))}
+        </div>
+      </Section>
+
       <Section title="Notifications">
         <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center', flexWrap: 'wrap' }}>
           <button
@@ -301,6 +342,39 @@ export default function SettingsView() {
             onChange={onImportFile}
           />
         </div>
+      </Section>
+
+      <Section title="Auto-backup">
+        {isElectron ? (
+          <>
+            <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center', flexWrap: 'wrap' }}>
+              <button className={`pill${autoBackup ? ' selected' : ''}`} onClick={() => setSetting('autoBackup', true)}>
+                On
+              </button>
+              <button className={`pill${!autoBackup ? ' selected' : ''}`} onClick={() => setSetting('autoBackup', false)}>
+                Off
+              </button>
+              <button className="btn btn-ghost" onClick={chooseBackupFolder} style={{ marginLeft: 'var(--sp-2)' }}>
+                <FolderOpen size={15} /> Choose folder
+              </button>
+              <button className="btn btn-ghost" onClick={backupNow}>
+                <Save size={15} /> Back up now
+              </button>
+            </div>
+            <div style={{ color: 'var(--text-3)', fontSize: 'var(--fs-small)', marginTop: 'var(--sp-2)', lineHeight: 1.5 }}>
+              {backupDir ? (
+                <>Saving a dated JSON backup to <code style={{ color: 'var(--text-2)' }}>{backupDir}</code> on every quit.</>
+              ) : (
+                'Choose a folder to automatically save a JSON backup on every quit.'
+              )}
+              {lastBackup && <> Last backup: {new Date(lastBackup).toLocaleString()}.</>}
+            </div>
+          </>
+        ) : (
+          <div style={{ color: 'var(--text-3)', fontSize: 'var(--fs-small)', lineHeight: 1.5 }}>
+            Auto-backup to a folder is available in the desktop app.
+          </div>
+        )}
       </Section>
 
       <Section title="Storage engine">

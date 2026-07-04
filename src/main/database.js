@@ -15,6 +15,7 @@ const path = require('path');
 const { app } = require('electron');
 const { v4: uuid } = require('uuid');
 const { nextDueDate } = require('../shared/recurrence');
+const { resetSubtasks } = require('../shared/subtasks');
 
 let SQL = null; // the sql.js module
 let db = null; // the active Database instance
@@ -162,13 +163,42 @@ CREATE INDEX IF NOT EXISTS idx_tasks_due ON tasks(dueDate);
 CREATE INDEX IF NOT EXISTS idx_history_task ON completionHistory(taskId);
 `;
 
-/** Add a column to an existing table when the schema evolves — CREATE TABLE
-    IF NOT EXISTS won't alter a table that a previous version already created. */
+/** Add a column to an existing table if it's missing (idempotent). CREATE
+    TABLE IF NOT EXISTS won't alter a table a previous version already created. */
 function ensureColumn(table, column, ddl) {
   const cols = all(`PRAGMA table_info(${table})`);
   if (!cols.some((c) => c.name === column)) {
     db.run(`ALTER TABLE ${table} ADD COLUMN ${ddl}`);
   }
+}
+
+/**
+ * Versioned schema migrations, tracked with SQLite's `PRAGMA user_version`.
+ * The base SCHEMA above creates the *current* tables for fresh installs; these
+ * migrations bring older databases forward. Each `up` is idempotent so it's
+ * safe on both fresh and existing DBs. To evolve the schema, bump the SCHEMA
+ * (for fresh installs) AND append a migration here — never mutate an old one.
+ */
+const MIGRATIONS = [
+  {
+    version: 1,
+    up() {
+      ensureColumn('tasks', 'dependsOn', 'dependsOn TEXT');
+    },
+  },
+];
+
+/** Apply any migrations newer than the database's recorded user_version. */
+function runMigrations() {
+  const row = get('PRAGMA user_version');
+  let current = row ? row.user_version : 0;
+  for (const m of MIGRATIONS) {
+    if (m.version > current) {
+      m.up();
+      current = m.version;
+    }
+  }
+  db.run(`PRAGMA user_version = ${current}`);
 }
 
 /** Initialize the database engine and load (or create) the on-disk file. */
@@ -184,8 +214,7 @@ async function init() {
     db = new SQL.Database();
   }
   db.run(SCHEMA);
-  // Migrations for databases created by earlier versions.
-  ensureColumn('tasks', 'dependsOn', 'dependsOn TEXT');
+  runMigrations();
   ensureSingletonStreak();
   persistNow();
 }
@@ -425,7 +454,7 @@ const tasks = {
           recurrencePattern: task.recurrencePattern,
           isStarred: task.isStarred,
           tags: task.tags,
-          subtasks: (task.subtasks || []).map((s) => ({ ...s, done: false })),
+          subtasks: resetSubtasks(task.subtasks),
           dependsOn: task.dependsOn,
         });
       }
@@ -598,8 +627,8 @@ const reflections = {
 // ---------------------------------------------------------------------------
 
 const analytics = {
-  /** Completions per day for the last `days` days. */
-  dailyCompletions(days = 30) {
+  /** Completions per day, grouped from the full history. */
+  dailyCompletions(_days = 30) {
     const rows = all(
       `SELECT substr(completedAt, 1, 10) AS day, COUNT(*) AS count
        FROM completionHistory GROUP BY day ORDER BY day ASC`

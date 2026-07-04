@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @typedef {import('../types').RecurrencePattern} RecurrencePattern
+ */
 /**
  * recurrence.js — recurring-task options and next-date math.
  *
@@ -17,6 +21,10 @@ export const RECURRENCE_OPTIONS = [
   { value: 'monthly-end', label: 'Last day of month' },
 ];
 
+/**
+ * @param {RecurrencePattern} pattern
+ * @returns {string | null}
+ */
 export function recurrenceLabel(pattern) {
   const o = RECURRENCE_OPTIONS.find((x) => x.value === pattern);
   return o && o.value ? o.label : null;
@@ -25,6 +33,9 @@ export function recurrenceLabel(pattern) {
 /**
  * Given an ISO date string (or null) and a pattern, return the next occurrence
  * as an ISO date string. Falls back to today as the base when no date is set.
+ * @param {string | null} dueDate
+ * @param {RecurrencePattern} pattern
+ * @returns {string | null}
  */
 export function nextDueDate(dueDate, pattern) {
   const base = dueDate ? new Date(dueDate) : new Date();

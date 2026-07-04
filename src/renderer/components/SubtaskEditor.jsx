@@ -1,50 +1,108 @@
 import { useState } from 'react';
 import cn from 'classnames';
-import { Check, X, Plus } from 'lucide-react';
+import { Check, X, Plus, ListPlus } from 'lucide-react';
+import { toDateInputValue, combineDateAndTime, isOverdue } from '../utils/dateHelpers';
 
 let localId = 0;
 const newId = () => `st-${Date.now()}-${localId++}`;
+const newNode = (title) => ({ id: newId(), title, done: false, dueDate: null, children: [] });
 
-/** Edit a task's subtasks. `value` is [{ id, title, done }]. */
+// Immutable tree operations, keyed by id.
+function mapTree(nodes, id, fn) {
+  return nodes.map((n) =>
+    n.id === id ? fn(n) : { ...n, children: mapTree(n.children || [], id, fn) }
+  );
+}
+function removeFromTree(nodes, id) {
+  return nodes
+    .filter((n) => n.id !== id)
+    .map((n) => ({ ...n, children: removeFromTree(n.children || [], id) }));
+}
+function addChildTo(nodes, parentId, child) {
+  return nodes.map((n) =>
+    n.id === parentId
+      ? { ...n, children: [...(n.children || []), child] }
+      : { ...n, children: addChildTo(n.children || [], parentId, child) }
+  );
+}
+
+function SubtaskRow({ node, depth, patch, remove, addChild }) {
+  const overdue =
+    !node.done && isOverdue({ isCompleted: false, dueDate: node.dueDate });
+  return (
+    <>
+      <div className={cn('subtask-row', { done: node.done })} style={{ marginLeft: depth * 18 }}>
+        <button
+          className={cn('subtask-check', { done: node.done })}
+          onClick={() => patch(node.id, { done: !node.done })}
+          aria-label="Toggle subtask"
+        >
+          {node.done && <Check size={11} strokeWidth={3} />}
+        </button>
+        <input
+          className="subtask-text"
+          value={node.title}
+          onChange={(e) => patch(node.id, { title: e.target.value })}
+        />
+        <input
+          type="date"
+          className={cn('subtask-date', { overdue })}
+          aria-label="Subtask due date"
+          value={toDateInputValue(node.dueDate)}
+          onChange={(e) =>
+            patch(node.id, { dueDate: e.target.value ? combineDateAndTime(e.target.value, '') : null })
+          }
+        />
+        <button
+          className="icon-btn subtask-addchild"
+          onClick={() => addChild(node.id)}
+          title="Add a sub-step"
+          aria-label="Add a sub-step"
+        >
+          <ListPlus size={14} />
+        </button>
+        <button
+          className="icon-btn subtask-remove"
+          onClick={() => remove(node.id)}
+          title="Remove"
+          aria-label="Remove subtask"
+        >
+          <X size={14} />
+        </button>
+      </div>
+      {(node.children || []).map((child) => (
+        <SubtaskRow
+          key={child.id}
+          node={child}
+          depth={depth + 1}
+          patch={patch}
+          remove={remove}
+          addChild={addChild}
+        />
+      ))}
+    </>
+  );
+}
+
+/** Edit a task's subtask tree. `value` is [{ id, title, done, dueDate?, children? }]. */
 export default function SubtaskEditor({ value = [], onChange }) {
   const [draft, setDraft] = useState('');
+
+  const patch = (id, updates) => onChange(mapTree(value, id, (n) => ({ ...n, ...updates })));
+  const remove = (id) => onChange(removeFromTree(value, id));
+  const addChild = (parentId) => onChange(addChildTo(value, parentId, newNode('')));
 
   const add = () => {
     const t = draft.trim();
     if (!t) return;
-    onChange([...value, { id: newId(), title: t, done: false }]);
+    onChange([...value, newNode(t)]);
     setDraft('');
   };
 
-  const patch = (id, updates) =>
-    onChange(value.map((s) => (s.id === id ? { ...s, ...updates } : s)));
-
-  const remove = (id) => onChange(value.filter((s) => s.id !== id));
-
   return (
     <div className="subtask-list">
-      {value.map((s) => (
-        <div key={s.id} className={cn('subtask-row', { done: s.done })}>
-          <button
-            className={cn('subtask-check', { done: s.done })}
-            onClick={() => patch(s.id, { done: !s.done })}
-            aria-label="Toggle subtask"
-          >
-            {s.done && <Check size={11} strokeWidth={3} />}
-          </button>
-          <input
-            className="subtask-text"
-            value={s.title}
-            onChange={(e) => patch(s.id, { title: e.target.value })}
-          />
-          <button
-            className="icon-btn subtask-remove"
-            onClick={() => remove(s.id)}
-            aria-label="Remove subtask"
-          >
-            <X size={14} />
-          </button>
-        </div>
+      {value.map((n) => (
+        <SubtaskRow key={n.id} node={n} depth={0} patch={patch} remove={remove} addChild={addChild} />
       ))}
       <div className="subtask-row">
         <span className="subtask-check" style={{ borderStyle: 'dashed' }}>

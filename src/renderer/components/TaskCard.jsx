@@ -11,12 +11,20 @@ import { useFocusStore } from '../store/focusStore';
 import ConfirmDialog from './ConfirmDialog';
 import { priorityColor, timeLabel, blockingTasks } from '../utils/taskHelpers';
 import { dueLabel, dueTime, dueUrgency, isOverdue } from '../utils/dateHelpers';
+import { subtaskProgress } from '../../shared/subtasks';
 import { isStreakMilestone } from '../utils/gamification';
 import { playChime, playFanfare } from '../utils/sound';
 
 export default function TaskCard({ task, selectionMode = false, selected = false, onToggleSelect }) {
   const { toggleComplete, updateTask, deleteTask } = useTaskStore();
-  const allTasks = useTaskStore((s) => s.tasks);
+  // Blocked state via primitive selectors: this card re-renders only when its
+  // OWN blocking status changes, not on every unrelated task edit.
+  const blockedCount = useTaskStore((s) =>
+    task.isCompleted ? 0 : blockingTasks(task, s.tasks).length
+  );
+  const blockerNames = useTaskStore((s) =>
+    task.isCompleted ? '' : blockingTasks(task, s.tasks).map((t) => t.title).join(', ')
+  );
   const refreshStreak = useUserStore((s) => s.refreshStreak);
   const { celebrate, showToast, openTask, burstConfetti } = useUiStore();
   const projects = useProjectStore((s) => s.projects);
@@ -44,10 +52,9 @@ export default function TaskCard({ task, selectionMode = false, selected = false
   const overdue = isOverdue(task);
   const urgency = dueUrgency(task);
   const subtasks = task.subtasks || [];
-  const doneSubs = subtasks.filter((s) => s.done).length;
+  const { done: doneSubs, total: totalSubs } = subtaskProgress(subtasks);
   const tags = task.tags || [];
-  const blockers = task.isCompleted ? [] : blockingTasks(task, allTasks);
-  const blocked = blockers.length > 0;
+  const blocked = blockedCount > 0;
 
   const doComplete = () => {
     const rect = checkRef.current && checkRef.current.getBoundingClientRect();
@@ -118,11 +125,8 @@ export default function TaskCard({ task, selectionMode = false, selected = false
 
         <div className="task-meta">
           {blocked && (
-            <span
-              className="tag blocked"
-              title={`Waiting on: ${blockers.map((b) => b.title).join(', ')}`}
-            >
-              <Lock size={11} /> Waiting on {blockers.length}
+            <span className="tag blocked" title={`Waiting on: ${blockerNames}`}>
+              <Lock size={11} /> Waiting on {blockedCount}
             </span>
           )}
           <span className="tag" title={`${task.priority} priority`}>
@@ -156,10 +160,10 @@ export default function TaskCard({ task, selectionMode = false, selected = false
             </span>
           )}
 
-          {subtasks.length > 0 && (
+          {totalSubs > 0 && (
             <span className="subtask-progress" title="Subtasks">
               <CheckSquare size={11} />
-              {doneSubs}/{subtasks.length}
+              {doneSubs}/{totalSubs}
             </span>
           )}
 
@@ -251,9 +255,7 @@ export default function TaskCard({ task, selectionMode = false, selected = false
       {confirmBlocked && (
         <ConfirmDialog
           title="Complete a blocked task?"
-          message={`This task is still waiting on: ${blockers
-            .map((b) => b.title)
-            .join(', ')}. Complete it anyway?`}
+          message={`This task is still waiting on: ${blockerNames}. Complete it anyway?`}
           confirmLabel="Complete anyway"
           danger={false}
           onConfirm={doComplete}

@@ -47,7 +47,7 @@ export default function TodayView() {
   useEffect(() => {
     if (motivation || loading) return;
     setMotivation(buildMotivation());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [loading, motivation]);
 
   const { overdue, todays, completedToday } = useMemo(() => {

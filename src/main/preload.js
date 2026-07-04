@@ -36,6 +36,10 @@ contextBridge.exposeInMainWorld('momentum', {
     import: (payload) => ipcRenderer.invoke('data:import', payload),
     clear: () => ipcRenderer.invoke('data:clear'),
   },
+  backup: {
+    choose: () => ipcRenderer.invoke('backup:choose'),
+    now: (dir) => ipcRenderer.invoke('backup:now', dir),
+  },
   settings: {
     get: (key, fallback) => ipcRenderer.invoke('settings:get', key, fallback),
     set: (key, value) => ipcRenderer.invoke('settings:set', key, value),
