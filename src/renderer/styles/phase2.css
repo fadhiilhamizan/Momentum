@@ -1230,6 +1230,16 @@ body.overlay-open .main-pane {
   border-radius: 3px;
   flex-shrink: 0;
 }
+/* While the project dropdown is open, lift the card (and its drag-reorder
+   wrapper) above the cards below so the menu is never obscured. Each card is
+   its own stacking context (residual transform from the entrance animation),
+   so a plain z-index on the menu isn't enough. */
+.task-card.menu-open {
+  z-index: 40;
+}
+.sortable-row:has(.task-card.menu-open) {
+  z-index: 40;
+}
 
 /* Sidebar streak/level become buttons that open the progress popup */
 .status-btn {

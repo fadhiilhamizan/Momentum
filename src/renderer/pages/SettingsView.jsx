@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
-import { Moon, Sun, Monitor, Shield, Database, Volume2, VolumeX, Download, Upload, Bell, BellOff, Trash2, AlertTriangle, CalendarDays, Clock, Target, FolderOpen, Save } from 'lucide-react';
+import { Moon, Sun, Monitor, Shield, Database, Volume2, VolumeX, Download, Upload, Bell, BellOff, Trash2, AlertTriangle, CalendarDays, Clock, Target, FolderOpen, Save, Languages } from 'lucide-react';
 import { useUserStore } from '../store/userStore';
+import { useT, LANGUAGES, applyLanguage } from '../i18n';
 import { useTaskStore } from '../store/taskStore';
 import { useProjectStore } from '../store/projectStore';
 import api, { isElectron } from '../utils/api';
@@ -34,7 +35,9 @@ function Section({ title, danger = false, children }) {
 }
 
 export default function SettingsView() {
+  const t = useT();
   const theme = useUserStore((s) => s.settings.theme || 'dark');
+  const language = useUserStore((s) => s.settings.language || 'en');
   const sound = useUserStore((s) => s.settings.sound !== false);
   const notifications = useUserStore((s) => s.settings.notifications === true);
   const weekStart = useUserStore((s) => s.settings.weekStart ?? 0);
@@ -69,6 +72,11 @@ export default function SettingsView() {
   const setTheme = (value) => {
     setSetting('theme', value);
     applyTheme(value);
+  };
+
+  const setLanguage = (value) => {
+    setSetting('language', value);
+    applyLanguage(value); // update <html lang/dir> immediately
   };
 
   const setSound = (value) => {
@@ -166,23 +174,42 @@ export default function SettingsView() {
   return (
     <div className="view">
       <div className="view-head">
-        <div className="view-title">Settings</div>
-        <div className="view-subtitle">Make Momentum yours</div>
+        <div className="view-title">{t('settings.title')}</div>
+        <div className="view-subtitle">{t('settings.subtitle')}</div>
       </div>
 
-      <Section title="Appearance">
+      <Section title={<><Languages size={14} /> {t('settings.language')}</>}>
+        <div style={{ fontSize: 'var(--fs-small)', color: 'var(--text-3)', marginBottom: 'var(--sp-2)' }}>
+          {t('settings.language.desc')}
+        </div>
+        <select
+          className="select"
+          value={language}
+          onChange={(e) => setLanguage(e.target.value)}
+          style={{ maxWidth: 320 }}
+        >
+          {LANGUAGES.map((l) => (
+            <option key={l.code} value={l.code}>
+              {l.native}
+              {l.native !== l.name ? ` — ${l.name}` : ''}
+            </option>
+          ))}
+        </select>
+      </Section>
+
+      <Section title={t('settings.appearance')}>
         <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
           <button
             className={`pill${theme === 'dark' ? ' selected' : ''}`}
             onClick={() => setTheme('dark')}
           >
-            <Moon size={13} /> Dark
+            <Moon size={13} /> {t('settings.dark')}
           </button>
           <button
             className={`pill${theme === 'light' ? ' selected' : ''}`}
             onClick={() => setTheme('light')}
           >
-            <Sun size={13} /> Light
+            <Sun size={13} /> {t('settings.light')}
           </button>
           <button
             className={`pill${theme === 'system' ? ' selected' : ''}`}
@@ -193,19 +220,19 @@ export default function SettingsView() {
         </div>
       </Section>
 
-      <Section title="Sound">
+      <Section title={t('settings.sound')}>
         <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
           <button
             className={`pill${sound ? ' selected' : ''}`}
             onClick={() => setSound(true)}
           >
-            <Volume2 size={13} /> On
+            <Volume2 size={13} /> {t('common.on')}
           </button>
           <button
             className={`pill${!sound ? ' selected' : ''}`}
             onClick={() => setSound(false)}
           >
-            <VolumeX size={13} /> Off
+            <VolumeX size={13} /> {t('common.off')}
           </button>
         </div>
       </Section>
@@ -258,19 +285,19 @@ export default function SettingsView() {
         </div>
       </Section>
 
-      <Section title="Notifications">
+      <Section title={t('settings.notifications')}>
         <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center', flexWrap: 'wrap' }}>
           <button
             className={`pill${notifications ? ' selected' : ''}`}
             onClick={() => setNotifications(true)}
           >
-            <Bell size={13} /> On
+            <Bell size={13} /> {t('common.on')}
           </button>
           <button
             className={`pill${!notifications ? ' selected' : ''}`}
             onClick={() => setNotifications(false)}
           >
-            <BellOff size={13} /> Off
+            <BellOff size={13} /> {t('common.off')}
           </button>
           {notifications && (
             <button className="btn btn-ghost" onClick={testNotification} style={{ marginLeft: 'var(--sp-2)' }}>
@@ -310,7 +337,7 @@ export default function SettingsView() {
         )}
       </Section>
 
-      <Section title="Privacy & Data">
+      <Section title={t('settings.privacy')}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--sp-3)', color: 'var(--text-2)', fontSize: 'var(--fs-body-lg)', lineHeight: 1.5 }}>
           <Shield size={18} color="var(--success)" style={{ flexShrink: 0, marginTop: 2 }} />
           <div>
@@ -321,17 +348,17 @@ export default function SettingsView() {
         </div>
       </Section>
 
-      <Section title="Data">
+      <Section title={t('settings.data')}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-3)' }}>
           <div style={{ color: 'var(--text-2)', fontSize: 'var(--fs-body-lg)', lineHeight: 1.5 }}>
             Back up or restore your tasks, projects and reflections as JSON.
           </div>
           <div style={{ display: 'flex', gap: 'var(--sp-2)', flexShrink: 0 }}>
             <button className="btn btn-ghost" onClick={() => fileRef.current && fileRef.current.click()}>
-              <Download size={15} /> Import
+              <Download size={15} /> {t('common.import')}
             </button>
             <button className="btn btn-ghost" onClick={exportData}>
-              <Upload size={15} /> Export
+              <Upload size={15} /> {t('common.export')}
             </button>
           </div>
           <input
@@ -377,7 +404,7 @@ export default function SettingsView() {
         )}
       </Section>
 
-      <Section title="Storage engine">
+      <Section title={t('settings.storage')}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--sp-3)', color: 'var(--text-2)', fontSize: 'var(--fs-body-lg)', lineHeight: 1.5 }}>
           <Database size={18} color="var(--gold-text)" style={{ flexShrink: 0, marginTop: 2 }} />
           <div>

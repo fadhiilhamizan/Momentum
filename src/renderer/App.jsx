@@ -27,6 +27,7 @@ import { levelFromXp, xpFromCompletions } from './utils/gamification';
 import { playFanfare } from './utils/sound';
 import { applyTheme } from './utils/theme';
 import { setTimeFormat } from './utils/dateHelpers';
+import { applyLanguage } from './i18n';
 
 function isTypingTarget(el) {
   if (!el) return false;
@@ -80,6 +81,7 @@ export default function App() {
     loadSettings().then(() => {
       const s = useUserStore.getState().settings;
       applyTheme(s.theme || 'dark');
+      applyLanguage(s.language || 'en');
       setTimeFormat(s.timeFormat || '12h');
       loadTasks().then(() => {
         maybeDailyBriefing(useTaskStore.getState().tasks);

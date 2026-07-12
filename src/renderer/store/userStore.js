@@ -6,6 +6,7 @@ export const useUserStore = create((set, get) => ({
   streakBump: 0, // increment to trigger the +1 animation
   settings: {
     theme: 'dark',
+    language: 'en',
     sound: true,
     notifications: false,
     weekStart: 0,
@@ -43,6 +44,7 @@ export const useUserStore = create((set, get) => ({
       set({
         settings: {
           theme: 'dark',
+          language: 'en',
           sound: true,
           notifications: false,
           weekStart: 0,

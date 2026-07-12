@@ -95,6 +95,7 @@ export default function TaskCard({ task, selectionMode = false, selected = false
         overdue: overdue && !task.isCompleted,
         selecting: selectionMode,
         selected: selectionMode && selected,
+        'menu-open': projectPickerOpen,
       })}
     >
       <button

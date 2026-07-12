@@ -991,3 +991,41 @@ button.pill:hover {
 .view-head {
   animation: riseIn var(--dur) var(--ease) both;
 }
+
+/* ------------------------------------------------------------------ */
+/* Right-to-left support (Arabic, Urdu)                               */
+/* The grid + logical text flow mirror automatically; these fixes     */
+/* correct the remaining physical-direction properties.              */
+/* ------------------------------------------------------------------ */
+
+[dir='rtl'] .sidebar {
+  border-right: none;
+  border-left: 1px solid var(--border);
+  animation: none; /* the LTR slide-in would come from the wrong edge */
+}
+[dir='rtl'] .nav-item:hover {
+  transform: translateX(-3px);
+}
+[dir='rtl'] .nav-item.active::before {
+  left: auto;
+  right: 0;
+}
+[dir='rtl'] .nav-item .count,
+[dir='rtl'] .banner-stat,
+[dir='rtl'] .input-hint {
+  margin-left: 0;
+  margin-right: auto;
+}
+[dir='rtl'] .project-menu {
+  right: auto;
+  left: 0;
+}
+[dir='rtl'] .select {
+  background-position: left 10px center;
+  padding-right: 10px;
+  padding-left: 30px;
+}
+[dir='rtl'] .status-btn,
+[dir='rtl'] .project-menu-item {
+  text-align: right;
+}

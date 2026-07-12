@@ -19,18 +19,19 @@ import { useUserStore } from '../store/userStore';
 import { useUiStore } from '../store/uiStore';
 import { levelFromXp, xpFromCompletions } from '../utils/gamification';
 import { todayKey } from '../utils/dateHelpers';
+import { useT } from '../i18n';
 import ProgressModal from './ProgressModal';
 
 const NAV = [
-  { to: '/today', label: 'Today', icon: Target },
-  { to: '/calendar', label: 'Calendar', icon: CalendarDays },
-  { to: '/tasks', label: 'All Tasks', icon: ListChecks, badge: 'open' },
-  { to: '/starred', label: 'Starred', icon: Star, badge: 'starred' },
-  { to: '/projects', label: 'Projects', icon: FolderKanban },
-  { to: '/analytics', label: 'Analytics', icon: BarChart3 },
-  { to: '/reflection', label: 'Reflection', icon: NotebookPen },
-  { to: '/settings', label: 'Settings', icon: Settings },
-  { to: '/about', label: 'About', icon: Info },
+  { to: '/today', key: 'nav.today', icon: Target },
+  { to: '/calendar', key: 'nav.calendar', icon: CalendarDays },
+  { to: '/tasks', key: 'nav.tasks', icon: ListChecks, badge: 'open' },
+  { to: '/starred', key: 'nav.starred', icon: Star, badge: 'starred' },
+  { to: '/projects', key: 'nav.projects', icon: FolderKanban },
+  { to: '/analytics', key: 'nav.analytics', icon: BarChart3 },
+  { to: '/reflection', key: 'nav.reflection', icon: NotebookPen },
+  { to: '/settings', key: 'nav.settings', icon: Settings },
+  { to: '/about', key: 'nav.about', icon: Info },
 ];
 
 export default function Sidebar() {
@@ -38,6 +39,7 @@ export default function Sidebar() {
   const streak = useUserStore((s) => s.streak);
   const streakBump = useUserStore((s) => s.streakBump);
   const openHelp = useUiStore((s) => s.openHelp);
+  const t = useT();
 
   const openCount = tasks.filter((t) => !t.isCompleted).length;
   const starredCount = tasks.filter((t) => t.isStarred && !t.isCompleted).length;
@@ -83,7 +85,7 @@ export default function Sidebar() {
               className={({ isActive }) => cn('nav-item', { active: isActive })}
             >
               <Icon size={17} />
-              {item.label}
+              {t(item.key)}
               {count > 0 && <span className="count">{count}</span>}
             </NavLink>
           );
@@ -106,7 +108,7 @@ export default function Sidebar() {
                 {streak.currentStreak}
               </span>
               <span className="streak-caption">
-                day streak
+                {t('sidebar.dayStreak')}
                 {atRisk && streak.currentStreak > 0 && (
                   <>
                     <br />
@@ -134,7 +136,7 @@ export default function Sidebar() {
         </div>
 
         <button className="help-btn" onClick={openHelp} title="Help & shortcuts (?)">
-          <HelpCircle size={14} /> Help & shortcuts
+          <HelpCircle size={14} /> {t('sidebar.help')}
         </button>
       </div>
 
