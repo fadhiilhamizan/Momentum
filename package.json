@@ -1,7 +1,7 @@
 {
   "name": "momentum",
   "productName": "Momentum",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Build momentum, achieve goals — a premium task management desktop app.",
   "main": ".webpack/main",
   "author": "Fadhil",
