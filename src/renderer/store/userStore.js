@@ -14,6 +14,7 @@ export const useUserStore = create((set, get) => ({
     reminderLead: 0,
     weeklyGoal: 0,
     autoBackup: false,
+    calendarView: 'month',
   },
   settingsLoaded: false,
 
@@ -50,6 +51,7 @@ export const useUserStore = create((set, get) => ({
           weekStart: 0,
           timeFormat: '12h',
           reminderLead: 0,
+          calendarView: 'month',
           ...(all || {}),
         },
         settingsLoaded: true,
